@@ -79,7 +79,7 @@ def query_mistral(prompt, api_url="http://host.docker.internal:8080/v1/chat/comp
             ],
             "temperature": 0.9,
             "top_p": 0.9,
-            "max_tokens": 150,
+            # "max_tokens": 150,
             "stream": False
         }
 
