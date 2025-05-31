@@ -21,9 +21,7 @@ import "./Home.css";
 function Home() {
   return (
     <>
-    {/* <SidebarProvider className="text-lg">
-    <AppSidebar />
-    <SidebarTrigger/> */}
+
     <div className="w-full grid place-items-center">
       <Navbar />
       <Hero />
@@ -33,15 +31,11 @@ function Home() {
       <Features />
       <Services />
       <Cta />
-      {/* <Testimonials /> */}
       <Team />
-      {/* <Pricing /> */}
-      {/* <Newsletter /> */}
       <FAQ />
       <Footer />
       <ScrollToTop />
       </div>
-    {/* // </SidebarProvider> */}
 
     </>
   );

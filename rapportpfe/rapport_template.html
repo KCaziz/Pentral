@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Rapport d'Énumération</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            font-family: 'Noto Color Emoji', 'Segoe UI Emoji', sans-serif;
+            margin: 40px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        header {
+            background-color: #000;
+            color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header img.logo {
+            width: 150px;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        .date {
+            text-align: right;
+            font-size: 0.9em;
+            margin-top: -40px;
+            color: #ccc;
+        }
+
+        section {
+            background-color: #fff;
+            margin: 20px 0;
+            padding: 25px;
+            border-left: 6px solid #c80000;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        section h2 {
+            margin-bottom: 15px;
+            color: #c80000;
+            text-transform: uppercase;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            table-layout: auto;
+            table-layout: fixed; /* Table taille fixe pour mieux contrôler la largeur */
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+            vertical-align: middle;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: normal; /* autorise retour à la ligne */
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        td.criticite-haute {
+            color: #c80000;
+            font-weight: bold;
+        }
+
+        td.criticite-moyenne {
+            color: #FF8C00;
+            font-weight: bold;
+        }
+
+        td.criticite-faible {
+            color: #228B22;
+            font-weight: bold;
+        }
+
+        tr {
+            page-break-inside: avoid;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.8em;
+            color: #777;
+        }
+        thead {
+            background-color: #464242; 
+            color: white;
+            font-weight: bold; 
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <img src="file:///C:/Users/Dalouu/Desktop/rapportpfe/logo_keystone.png" alt="Logo Keystone" class="logo">
+    <h1>{{ project_title }}</h1>
+    <div class="date">{{ date }}</div>
+</header>
+
+<div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+    <div style="flex: 0 0 45%;">
+        <p><strong>Nom du projet :</strong> {{ project_name }}</p>
+        <p><strong>ID du scan :</strong> {{ scan_id }}</p>
+    </div>
+    <div style="flex: 0 0 45%;">
+        <p><strong>IP cible :</strong> {{ target_ip }}</p>
+        <p><strong>Date :</strong> {{ date }}</p>
+    </div>
+</div>
+
+<section>
+    <h2>Résultats</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Port</th>
+                <th>Technologie</th>
+                <th>Version</th>
+                <th>Vulnérable</th>
+                <th>CVE</th>
+                <th>Criticité</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for res in results %}
+            <tr>
+                <td>{{ res.port }}</td>
+                <td>{{ res.technologie }}</td>
+                <td>{{ res.version }}</td>
+                <td>{% if res.vulnerable %}✅ True{% else %}❌ False{% endif %}</td>
+                <td>{{ res.cve if res.vulnerable else '—' }}</td>
+                <td class="{% if res.vulnerable %}
+                            {% if res.criticite == 'Haute' %}criticite-haute
+                            {% elif res.criticite == 'Moyenne' %}criticite-moyenne
+                            {% else %}criticite-faible
+                            {% endif %}
+                          {% endif %}">
+                    {% if res.vulnerable %}
+                        {% if res.criticite == 'Haute' %}🔴 Haute
+                        {% elif res.criticite == 'Moyenne' %}🟠 Moyenne
+                        {% else %}🟢 Basse
+                        {% endif %}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    
+    </table>
+</section>
+
+<section>
+    <h2>Remarques</h2>
+    <p>{{ remarks }}</p>
+</section>
+
+<footer>
+    Rapport  –  Keystone Corporation
+</footer>
+
+</body>
+</html>

@@ -220,7 +220,6 @@ function ProjectDashboard() {
               />
               <select name="type" id="type" value={type} onChange={(e) => setType(e.target.value)} className="pl-1">
                 <option value="no_user">sans user</option>
-                <option value="reason">avec raisonnement</option>
                 <option value="user">avec user</option>
               </select>
               <button className="bg-blue-600 text-white px-4 rounded">Ajouter</button>

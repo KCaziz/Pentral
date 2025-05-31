@@ -27,6 +27,10 @@ function Scan_user() {
   const [report, setReport] = useState(null);
   const [showReport, setShowReport] = useState(false);
   const [scan_project, setScan_project] = useState("");
+  const [error, setError] = useState(null);
+  const [chargement, setChargement] = useState(false);
+  const [response, setResponse] = useState("");
+  
   const { scanId } = useParams();
   const navigate = useNavigate();
 
@@ -196,7 +200,17 @@ function Scan_user() {
     e.preventDefault();
     setLoading(true);
 
+    setResponse(""); // Réinitialiser les réponses précédentes
+
     try {
+      // 1. D'abord établir la connexion streaming
+      console.log("Initialisation du streaming...");
+      socket.emit("start_llm_query", { target });
+
+      // 2. Attendre que le streaming soit prêt avant de lancer la requête API
+      socket.once("streaming_ready", async () => {
+        console.log("Streaming prêt, lancement de la requête API...");
+
       const response = await fetch(`http://127.0.0.1:5000/api/scans/${scanId}/start_user`, {
         method: "POST",
         headers: {
@@ -208,10 +222,40 @@ function Scan_user() {
       const data = await response.json();
       setOutput(data.output || data.error);
       setLoading(false);
+    });
     } catch (error) {
       setOutput("Erreur de connexion au serveur");
     }
   };
+
+  useEffect(() => {
+    console.log("Initialisation de WebSocket...");
+
+    socket.on("connect", () => {
+      console.log("Connecté via WebSocket");
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("Erreur WebSocket:", err);
+    });
+
+    socket.on("llm_response", (data) => {
+      console.log("Token reçu");
+      setResponse((prev) => prev + data.token);
+    });
+
+    socket.on("llm_end", (data) => {
+      console.log("Fin de stream:", data.final_text);
+    });
+
+    return () => {
+      socket.off("llm_response");
+      socket.off("llm_end");
+      socket.off("connect");
+      socket.off("connect_error");
+    };
+  }, []);
+
   if (!user || !scan) return <p>Chargement...</p>
 
 
@@ -233,8 +277,20 @@ function Scan_user() {
           <img src={cloudSvg} alt="cloud" className=" ml-[50%] mb-10 size-32" />
 
         </header>
-        <div className="h-screen flex items-center justify-center bg-gradient-to-b from-black to-yellow-300">
-
+        <div className="h-screen bg-gradient-to-b from-black to-yellow-300 flex flex-col items-center">
+          <div className="min-h-screen  flex items-center justify-center mb-0 pb-0">
+            <div className="bg-black mr-4 rounded-lg shadow-lg w-96 h-[300px] overflow-y-auto font-mono text-green-400 whitespace-pre-wrap border border-green-900">
+              <div className="flex items-center m-2" style={{
+                // height: "300px",
+                whiteSpace: 'pre-wrap'  // Ceci préserve les espaces et sauts de ligne
+              }}>
+                <div className="h-3 w-3 bg-red-500 rounded-full mr-2"></div>
+                <div className="h-3 w-3 bg-yellow-500 rounded-full mr-2"></div>
+                <div className="h-3 w-3 bg-green-500 rounded-full mr-3"></div>
+                <span className=" text-green-500">LLM Response</span>
+              </div>
+              {response || <span className="text-gray-500 text-sm ml-4">$ Waiting for response...</span>}
+            </div>
           <div className="bg-black bg-opacity-50 p-6 rounded-lg shadow-lg w-96 text-center">
             <h2 className="text-white text-lg font-semibold mb-4 p-10">
               Entrer une IP, CIDR ou un domaine
@@ -353,7 +409,7 @@ function Scan_user() {
                 </pre>
               </div>
             )}      </div>
-          <div className="bg-black p-4 ml-4 rounded-lg shadow-lg  max-w-2xl font-mono text-green-400 overflow-auto" style={{ height: "300px" }}>
+            <div className="bg-black p-4 ml-4 rounded-lg shadow-lg  w-80 font-mono text-green-400 overflow-auto" style={{ height: "300px" }}>
             <div className="flex items-center mb-2">
               <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
               <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
@@ -381,6 +437,7 @@ function Scan_user() {
               <span className="animate-pulse">_</span>
             </div>
           </div>
+        </div>
         </div>
       </SidebarInset>
     </SidebarProvider>

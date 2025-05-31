@@ -1,0 +1,205 @@
+{
+  "commands": [
+    {
+      "tool": "nmap",
+      "command": "nmap -p 80,443 -sV -oN nmap_output 192.168.1.1",
+      "timestamp": 1747800689.423901
+    },
+    {
+      "tool": "ShuffleOnNet",
+      "command": "shuffleonnet scan --url http://192.168.1.1",
+      "timestamp": 1747800689.4249232
+    },
+    {
+      "tool": "Masscan",
+      "command": "masscan -p80,443 -oN 192.168.1.1",
+      "timestamp": 1747800689.4256723
+    },
+    {
+      "tool": "nmap",
+      "command": "nmap -sV -p80,443 -oN 192.168.1.1",
+      "timestamp": 1747800689.4261184
+    },
+    {
+      "tool": "nmap",
+      "command": "nmap -sV -p 80,443 -O 192.168.190.71",
+      "timestamp": 1747803813.8999424
+    },
+    {
+      "tool": "shuffle",
+      "command": "shuffleonnet discovery --target 192.168.190.71",
+      "timestamp": 1747803813.9003668
+    },
+    {
+      "tool": "Wireshark",
+      "command": "wireshark -i eth0 -k -f host 192.168.190.71 and (http  https)",
+      "timestamp": 1747803813.9013703
+    },
+    {
+      "tool": "nmap",
+      "command": "nmap -p 80,443 -sV -oN - -p0 -oG --script=vuln 192.168.190.71",
+      "timestamp": 1747803813.9017265
+    },
+    {
+      "tool": "nmap",
+      "command": "nmap -sV -p 80,443 -O --script http-enum,http-vhosts,dns-brute 192.168.190.71",
+      "timestamp": 1747830141.087848
+    },
+    {
+      "tool": "assetfinder",
+      "command": "assetfinder -subs 192.168.190.71",
+      "timestamp": 1747830141.08821
+    }
+  ],
+  "errors": {
+    "cvedetails": [
+      {
+        "command": "cvedetails -l 192.168.1.1 --json",
+        "error": "Erreur d\u00e9tect\u00e9e dans l'ex\u00e9cution de la commande",
+        "timestamp": 1747440126.9684103
+      }
+    ],
+    "fingerprint": [
+      {
+        "command": "md5sum 192.168.1.1",
+        "error": "Erreur d\u00e9tect\u00e9e dans l'ex\u00e9cution de la commande",
+        "timestamp": 1747440342.9624624
+      }
+    ],
+    "nmap": [
+      {
+        "command": "nmap -sV -O -p80,443 -oN -oX 192.168.1.1",
+        "error": "Erreur d\u00e9tect\u00e9e dans l'ex\u00e9cution de la commande",
+        "timestamp": 1747442468.246929
+      },
+      {
+        "command": "nmap -sV -p80,443 -oN --script vuln 192.168.31.129",
+        "error": "Erreur d\u00e9tect\u00e9e dans l'ex\u00e9cution de la commande",
+        "timestamp": 1747444873.6599233
+      },
+      {
+        "command": "nmap -sV -sC -p 80,443 -O --script=http-head,http-methods,http-title,dns-brute -oN nmap_results 192.168.1.1",
+        "error": "Erreur d\u00e9tect\u00e9e dans l'ex\u00e9cution de la commande",
+        "timestamp": 1747794693.8790114
+      },
+      {
+        "command": "nmap -p 80,443 -sC -sV -script http-enum,http-methods,http-robots,http-title,dns-brute -oN nmap_output 192.168.1.1",
+        "error": "Erreur d\u00e9tect\u00e9e dans l'ex\u00e9cution de la commande",
+        "timestamp": 1747797463.0868208
+      },
+      {
+        "command": "nmap -p 80,443 -sC -sV -O --script http-enum,http-vhosts,dns-brute,dns-large -oN nmap_output 192.168.1.1",
+        "error": "Erreur d\u00e9tect\u00e9e dans l'ex\u00e9cution de la commande",
+        "timestamp": 1747799194.9827118
+      },
+      {
+        "command": "nmap -sV -p80,443 -oN 192.168.1.1",
+        "error": "Erreur d\u00e9tect\u00e9e dans l'ex\u00e9cution de la commande",
+        "timestamp": 1747800583.2372887
+      },
+      {
+        "command": "nmap -p 80,443 -sV -oN - -p0 -oG --script=vuln 192.168.190.71",
+        "error": "Erreur d\u00e9tect\u00e9e dans l'ex\u00e9cution de la commande",
+        "timestamp": 1747803677.5642347
+      }
+    ],
+    "masscan": [
+      {
+        "command": "masscan -oN -v 192.168.1.1 -p 80,443",
+        "error": "Erreur d\u00e9tect\u00e9e dans l'ex\u00e9cution de la commande",
+        "timestamp": 1747442664.56585
+      }
+    ],
+    "RoboScan": [
+      {
+        "command": "sudo yum install -y roboscan && roboscan -i 192.168.31.129 -p 80,443 -o json --cpe -d 10",
+        "error": "Erreur d\u00e9tect\u00e9e dans l'ex\u00e9cution de la commande",
+        "timestamp": 1747444186.380626
+      }
+    ],
+    "shodan": [
+      {
+        "command": "shodan search host 192.168.1.1 -s port,os,product",
+        "error": "Erreur d\u00e9tect\u00e9e dans l'ex\u00e9cution de la commande",
+        "timestamp": 1747751174.926197
+      }
+    ],
+    "BloodHound": [
+      {
+        "command": "powershell -Command '.BloodHound.ps1 -ComputerName 192.168.1.1 -QueryType 'Enumeration' -OutputFormat JSON'",
+        "error": "Erreur d\u00e9tect\u00e9e dans l'ex\u00e9cution de la commande",
+        "timestamp": 1747754236.467011
+      }
+    ],
+    "OpenVAS": [
+      {
+        "command": "oscap-cli hostscan --host 192.168.1.1 --ports 80,443 --plugins web,https",
+        "error": "Erreur d\u00e9tect\u00e9e dans l'ex\u00e9cution de la commande",
+        "timestamp": 1747756131.5480695
+      }
+    ],
+    "powerdump": [
+      {
+        "command": "sudo powerdump -i 192.168.1.1 -o -p 80,443",
+        "error": "Erreur d\u00e9tect\u00e9e dans l'ex\u00e9cution de la commande",
+        "timestamp": 1747795015.8562255
+      }
+    ],
+    "DNSRecon": [
+      {
+        "command": "dnsrecon -d 192.168.1.1 -n [NS_SERVER] -e dns,subdomains,mx,mail,ns,ip,cert,hosts,cnames,TXT,PTR,whois",
+        "error": "Erreur d\u00e9tect\u00e9e dans l'ex\u00e9cution de la commande",
+        "timestamp": 1747796187.1666594
+      }
+    ],
+    "Nessus": [
+      {
+        "command": "sudo nessus scan --scan 192.168.1.1 --plugins all --output plugins.xml",
+        "error": "Erreur d\u00e9tect\u00e9e dans l'ex\u00e9cution de la commande",
+        "timestamp": 1747796961.0157666
+      }
+    ],
+    "ShuffleOnNet": [
+      {
+        "command": "shuffleonnet scan --url http://192.168.1.1",
+        "error": "Erreur d\u00e9tect\u00e9e dans l'ex\u00e9cution de la commande",
+        "timestamp": 1747799992.4670463
+      }
+    ],
+    "Masscan": [
+      {
+        "command": "masscan -p80,443 -oN 192.168.1.1",
+        "error": "Erreur d\u00e9tect\u00e9e dans l'ex\u00e9cution de la commande",
+        "timestamp": 1747800366.1232479
+      }
+    ],
+    "Censys": [
+      {
+        "command": "censys search -e http,https -o json 192.168.1.1 OR 192.168.1.1/10 OR 192.168.1.1-10",
+        "error": "Erreur d\u00e9tect\u00e9e dans l'ex\u00e9cution de la commande",
+        "timestamp": 1747801846.430872
+      }
+    ],
+    "shuffle": [
+      {
+        "command": "shuffle --target 192.168.1.71",
+        "error": "Erreur d\u00e9tect\u00e9e dans l'ex\u00e9cution de la commande",
+        "timestamp": 1747802864.5154762
+      }
+    ],
+    "Wireshark": [
+      {
+        "command": "wireshark -i eth0 -k -a host 192.168.190.71 -a port 80,443",
+        "error": "Erreur d\u00e9tect\u00e9e dans l'ex\u00e9cution de la commande",
+        "timestamp": 1747803381.1024358
+      }
+    ],
+    "assetfinder": [
+      {
+        "command": "assetfinder -subs 192.168.190.71",
+        "error": "Erreur d\u00e9tect\u00e9e dans l'ex\u00e9cution de la commande",
+        "timestamp": 1747830046.6460268
+      }
+    ]
+  }
+}

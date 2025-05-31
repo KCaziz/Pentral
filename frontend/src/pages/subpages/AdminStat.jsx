@@ -25,6 +25,8 @@ export default function AdminStatsDashboard() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Erreur lors du chargement des statistiques.");
         setStats(data);
+        console.log("Statistiques chargées :", data);
+        
       } catch (err) {
         console.error(err);
         setError(err.message);

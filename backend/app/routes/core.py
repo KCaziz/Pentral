@@ -4,13 +4,18 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import os
 from threading import Lock
-from app.services import ajout_yaml, ajout_yaml_no_user, ajout_yaml_no_user_reason, ajout_yaml_user
+from app.services import pentral_rapide, pentral_no_user, pentral_user
 import bcrypt
 from datetime import datetime, timedelta, timezone 
 import jwt
 from flask import current_app
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from bson import ObjectId
+from app import socketio  # importe bien le socketio déjà instancié
+from flask_socketio import emit
+from jinja2 import Environment, FileSystemLoader
+import pdfkit
+import subprocess
 
 SECRET_KEY = "secret_secret"
 from db import get_db
@@ -41,7 +46,75 @@ core_bp = Blueprint("core", __name__, static_folder="../../../frontend/", static
 script_status = {"status": "ready", "user_response": None, "command": [], "user_command": None, "llm_refuse_reason" : "" , "llm_response": None, "llm_reasoning": [], "llm_finished": False}
 status_lock = Lock()
 
+# Variable globale pour suivre les sessions socket actives
+active_socket_sessions = {}
 
+# Gestionnaires Socket.IO
+@socketio.on('connect')
+def handle_connect():
+    print(f"[SOCKET] Client connecté: {request.sid}")
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print(f"[SOCKET] Client déconnecté: {request.sid}")
+    # Nettoyage des sessions
+    if request.sid in active_socket_sessions:
+        del active_socket_sessions[request.sid]
+    # Réinitialiser le callback si c'était ce client
+    if hasattr(pentral_rapide, 'streaming_callback'):
+        pentral_rapide.streaming_callback = None
+    if hasattr(pentral_user, 'streaming_callback'):
+        pentral_user.streaming_callback = None
+    if hasattr(pentral_no_user, 'streaming_callback'):
+        pentral_no_user.streaming_callback = None
+        
+@socketio.on('start_llm_query')
+def start_llm_query(data):
+    session_id = request.sid
+    target = data.get('target', '')
+    print(f"[SOCKET] Streaming activé pour {session_id}, cible: {target}")
+
+    def send_token(token):
+        try:
+            socketio.emit("llm_response", {"token": token}, room=session_id)
+        except Exception as e:
+            print(f"[ERREUR] Envoi WebSocket: {str(e)}")
+            socketio.emit("llm_error", {"error": str(e)}, room=session_id)
+
+    # Enregistre le callback global
+    pentral_no_user.streaming_callback = send_token
+    pentral_rapide.streaming_callback = send_token
+    pentral_user.streaming_callback = send_token
+
+    emit("streaming_ready", {"status": "ready"})
+
+
+@core_bp.route("/api/run", methods=["POST"])
+def run_command():
+    data = request.json
+    target = data.get("target", "")
+    
+    if not target:
+        return jsonify({"error": "Commande invalide"}), 400
+    
+    try:
+        print(f"[API] Exécution pour cible: {target}")
+        
+        # script_status["command"].clear() # Votre code existant
+        
+        # Exécution avec streaming si un socket est actif
+        output = pentral_rapide.main(target)
+        
+        # Signal de fin optionnel (déjà envoyé dans la fonction patched_query_llm)
+        session_id = request.sid if hasattr(request, 'sid') else None
+        if session_id and session_id in active_socket_sessions:
+            socketio.emit("llm_end", {"final_text": output}, room=session_id)
+            
+        return jsonify({"output": output})
+    except Exception as e:
+        print(f"[ERREUR] Exécution: {str(e)}")
+        return jsonify({"error": f"Erreur: {str(e)}"}), 500
+    
 @core_bp.route('/pause', methods=['POST'])
 def pause_script():
     """Marque le script comme en pause et en attente de l'utilisateur."""
@@ -77,15 +150,7 @@ def respond():
         return jsonify({"message": "Réponse enregistrée."})
 
 
-@core_bp.route("/api/run", methods=["POST"])
-def run_command():
-    data = request.json  # Vérifie que le frontend envoie bien du JSON
-    target = data.get("target", "")
-    if target:
-        script_status["command"].clear()
-        output = ajout_yaml.main(target)
-        return jsonify({"output": output})
-    return jsonify({"error": "Commande invalide"}), 400
+
 
 @core_bp.route('/validation', methods=["POST"])
 def validation():
@@ -124,7 +189,7 @@ def run_command_no_user():
     target = data.get("target", "")
     if target:
         script_status["command"].clear()
-        output = ajout_yaml_no_user.main(target)
+        output = pentral_no_user.main(target)
         return jsonify({"output": output})
     return jsonify({"error": "Commande invalide"}), 400
 
@@ -317,7 +382,22 @@ def get_user_projects(user_id):
     except Exception as e:
         return jsonify([]), 501  # Retourne un tableau vide en cas d'erreur
 
-        
+# recup un projet a partir d'un scan
+def get_project_from_scan(scan_id):
+    """Retrouve le projet associé à un scan donné"""
+    try:
+        project = projects_collection.find_one({
+            "scans": ObjectId(scan_id)
+        })
+        if not project:
+            print(f"[INFO] Aucun projet ne contient le scan {scan_id}")
+            return None, None
+
+        return project.get("name"), project.get("company")
+    except Exception as e:
+        print(f"[ERREUR] get_project_from_scan : {str(e)}")
+        return None, None
+
 # recupere un projet
 @core_bp.route("/api/get_project/<project_id>", methods=["GET"])
 def get_project(project_id):
@@ -353,11 +433,6 @@ def delete_project(project_id):
 
         # Supprimer les scans associés
         scans_collection.delete_many({"project_id": ObjectId(project_id)})
-
-        # Supprimer les autres relations
-        # Exemple si vous avez une collection de tâches :
-        # tasks_collection.delete_many({"project_id": ObjectId(project_id)})
-
         # Finalement supprimer le projet
         projects_collection.delete_one({"_id": ObjectId(project_id)})
 
@@ -512,6 +587,9 @@ def create_empty_scan():
 def start_scan(scan_id):
     data = request.json
     target = data.get("target")
+    project_title, project_name = get_project_from_scan(scan_id)
+    if not project_title:
+        return jsonify({"error": "Projet introuvable pour ce scan"}), 404
     if not target:
         return jsonify({"error": "Target requise"}), 400
 
@@ -529,43 +607,65 @@ def start_scan(scan_id):
 
         # Lancer le script
         script_status["command"].clear()
-        output = ajout_yaml_no_user.main(target)
+
+        session_id = request.sid if hasattr(request, 'sid') else None
+        
+        output = pentral_no_user.main(target)
+        
+        if session_id and session_id in active_socket_sessions:
+            socketio.emit("llm_end", {"final_text": str(output)}, room=session_id)
+
 
         if not output:
             return jsonify({"error": "Pas d'output fourni"}), 400
+        
+        path_to_wkhtmltopdf = "/root/Pentral/wkhtmltopdf/bin/wkhtmltopdf.exe"
+        # config = pdfkit.configuration(wkhtmltopdf=path_to_wkhtmltopdf)
+        config = pdfkit.configuration(wkhtmltopdf='/usr/local/bin/wkhtmltopdf')
+        env = Environment(loader=FileSystemLoader('/root/Pentral/rapportpfe'))
+        template = env.get_template('rapport_template.html')
+        
+        # Aplatir la liste si elle est imbriquée
+        
+        output["scan_id"] = scan_id
+        output["project_title"] = project_title
+        output["project_name"] = project_name
+
+        html_content = template.render(**output)
 
         # Créer le chemin pour sauvegarder le PDF
-        reports_dir = os.path.join(current_app.root_path, 'static', 'reports')
+        reports_dir = os.path.abspath('/root/Pentral/backend/app/static/reports')
         os.makedirs(reports_dir, exist_ok=True)
 
         filename = f"report_{scan_id}.pdf"
         file_path = os.path.join(reports_dir, filename)
 
-        # Générer le PDF
-        c = canvas.Canvas(file_path, pagesize=letter)
-        width, height = letter
-
-        lines = output.split('\n')
-        y = height - 40  # Décalage initial
-
-        for line in lines:
-            c.drawString(40, y, line)
-            y -= 15  # Espacement entre les lignes
-            if y < 40:  # Si on arrive en bas, nouvelle page
-                c.showPage()
-                y = height - 40
-
-        c.save()
-
         # URL relative pour stocker dans la DB
         relative_url = f"/static/reports/{filename}"
-
+        output_path = os.path.join(reports_dir, filename)
+        
+        try:
+            process = subprocess.run(
+                [
+                    "xvfb-run", "--auto-servernum", "--server-args=-screen 0 1024x768x24",
+                    "/usr/local/bin/wkhtmltopdf", "-", output_path
+                ],
+                input=html_content.encode("utf-8"),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True
+            )
+            print("\n✅ Rapport PDF généré avec succès :", output_path)
+        except subprocess.CalledProcessError as e:
+            print("[❌ ERREUR] wkhtmltopdf a échoué :")
+            print(e.stderr.decode())
+        
         # Update du scan
         scans_collection.update_one(
             {"_id": ObjectId(scan_id)},
             {
                 "$set": {
-                    "report_url": relative_url,
+                    "report_url": output_path,
                     "status": "completed",
                     "finished_at": datetime.utcnow()
                 }
@@ -585,6 +685,111 @@ def start_scan(scan_id):
             }
         )
         return jsonify({"error": str(e)}), 500
+
+   
+############################# SCAN 2  Lancement USER ######################
+@core_bp.route("/api/scans/<scan_id>/start_user", methods=["POST"])
+def start_scan_reason(scan_id):
+    data = request.json
+    target = data.get("target")
+
+    project_title, project_name = get_project_from_scan(scan_id)
+    if not project_title:
+        return jsonify({"error": "Projet introuvable pour ce scan"}), 404
+    if not target:
+        return jsonify({"error": "Target requise"}), 400
+
+    try:
+        scans_collection.update_one(
+            {"_id": ObjectId(scan_id)},
+            {
+                "$set": {
+                    "target": target,
+                    "status": "running",
+                    "started_at": datetime.utcnow()
+                }
+            }
+        )
+
+        # Lancer le script
+        script_status["command"].clear()
+        script_status["llm_reasoning"].clear()
+        script_status["llm_finished"] = False
+        session_id = request.sid if hasattr(request, 'sid') else None
+
+        output = pentral_user.main(target)
+        
+        if session_id and session_id in active_socket_sessions:
+            socketio.emit("llm_end", {"final_text": str(output)}, room=session_id)
+
+
+        if not output:
+            return jsonify({"error": "Pas d'output fourni"}), 400
+        
+        path_to_wkhtmltopdf = "/root/Pentral/wkhtmltopdf/bin/wkhtmltopdf.exe"
+        # config = pdfkit.configuration(wkhtmltopdf=path_to_wkhtmltopdf)
+        config = pdfkit.configuration(wkhtmltopdf='/usr/local/bin/wkhtmltopdf')
+        env = Environment(loader=FileSystemLoader('/root/Pentral/rapportpfe'))
+        template = env.get_template('rapport_template.html')
+        
+        output["scan_id"] = scan_id
+        output["project_title"] = project_title
+        output["project_name"] = project_name
+
+        html_content = template.render(**output)
+
+        # Créer le chemin pour sauvegarder le PDF
+        reports_dir = os.path.abspath('/root/Pentral/backend/app/static/reports')
+        os.makedirs(reports_dir, exist_ok=True)
+
+        filename = f"report_{scan_id}.pdf"
+        file_path = os.path.join(reports_dir, filename)
+
+        # URL relative pour stocker dans la DB
+        relative_url = f"/static/reports/{filename}"
+        output_path = os.path.join(reports_dir, filename)
+        
+        try:
+            process = subprocess.run(
+                [
+                    "xvfb-run", "--auto-servernum", "--server-args=-screen 0 1024x768x24",
+                    "/usr/local/bin/wkhtmltopdf", "-", output_path
+                ],
+                input=html_content.encode("utf-8"),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True
+            )
+            print("\n✅ Rapport PDF généré avec succès :", output_path)
+        except subprocess.CalledProcessError as e:
+            print("[❌ ERREUR] wkhtmltopdf a échoué :")
+            print(e.stderr.decode())
+        
+        # Update du scan
+        scans_collection.update_one(
+            {"_id": ObjectId(scan_id)},
+            {
+                "$set": {
+                    "report_url": output_path,
+                    "status": "completed",
+                    "finished_at": datetime.utcnow()
+                }
+            }
+        )
+        return jsonify({"message": "Scan terminé", "output": output}), 200
+
+    except Exception as e:
+        scans_collection.update_one(
+            {"_id": ObjectId(scan_id)},
+            {
+                "$set": {
+                    "status": "error",
+                    "finished_at": datetime.utcnow()
+                }
+            }
+        )
+        return jsonify({"error": str(e)}), 500
+
 
 ############################# SCAN 3  Update No user ######################
 @core_bp.route("/api/scans/<scan_id>/add_command", methods=["POST"])
@@ -609,102 +814,7 @@ def add_command_to_scan(scan_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-    
-    
-############################# SCAN 2  Lancement USER ######################
-@core_bp.route("/api/scans/<scan_id>/start_user", methods=["POST"])
-def start_scan_reason(scan_id):
-    data = request.json
-    target = data.get("target")
-    if not target:
-        return jsonify({"error": "Target requise"}), 400
-
-    try:
-        scans_collection.update_one(
-            {"_id": ObjectId(scan_id)},
-            {
-                "$set": {
-                    "target": target,
-                    "status": "running",
-                    "started_at": datetime.utcnow()
-                }
-            }
-        )
-
-        # Lancer le script
-        script_status["command"].clear()
-        script_status["llm_reasoning"].clear()
-        script_status["llm_finished"] = False
-        output = ajout_yaml_user.main(target)
-
-        if not output:
-            return jsonify({"error": "Pas d'output fourni"}), 400
-
-        # Créer le chemin pour sauvegarder le PDF
-        reports_dir = os.path.join(current_app.root_path, 'static', 'reports')
-        os.makedirs(reports_dir, exist_ok=True)
-
-        filename = f"report_{scan_id}.pdf"
-        file_path = os.path.join(reports_dir, filename)
-
-        # Générer le PDF
-        c = canvas.Canvas(file_path, pagesize=letter)
-        width, height = letter
-
-        lines = output.split('\n')
-        y = height - 40  # Décalage initial
-
-        for line in lines:
-            c.drawString(40, y, line)
-            y -= 15  # Espacement entre les lignes
-            if y < 40:  # Si on arrive en bas, nouvelle page
-                c.showPage()
-                y = height - 40
-
-        c.save()
-
-        # URL relative pour stocker dans la DB
-        relative_url = f"/static/reports/{filename}"
-
-        # Update du scan
-        scans_collection.update_one(
-            {"_id": ObjectId(scan_id)},
-            {
-                "$set": {
-                    "report_url": relative_url,
-                    "status": "completed",
-                    "finished_at": datetime.utcnow()
-                }
-            }
-        )
-
-        return jsonify({"message": "Scan terminé", "output": output}), 200
-
-    except Exception as e:
-        scans_collection.update_one(
-            {"_id": ObjectId(scan_id)},
-            {
-                "$set": {
-                    "status": "error",
-                    "finished_at": datetime.utcnow()
-                }
-            }
-        )
-        return jsonify({"error": str(e)}), 500
-
-from flask import send_from_directory
-
-@core_bp.route('/static/reports/<path:filename>')
-def consult_report(filename):
-    reports_dir = os.path.join(current_app.root_path, 'static', 'reports')
-    return send_from_directory(reports_dir, filename)
-
-@core_bp.route('/static/reports/<path:filename>/dl')
-def dl_report(filename):
-    reports_dir = os.path.join(current_app.root_path, 'static', 'reports')
-    return send_from_directory(reports_dir, filename, as_attachment=True)
-
-
+ 
 ################## ADMIN MANAGEMENT ######################
 def is_admin_required(f):
     @wraps(f)
@@ -818,10 +928,9 @@ def get_admin_stats(user_id):
         "scanCount": scan_count,
         "completedScanCount": len(completed),
         "avgScanDuration": f"{avg_duration} min" if avg_duration else None,
+        "TotalScansDuration": f"{round(sum(durations) / 60, 2)} min" if durations else None,
         "scansByDay": scans_by_day
     })
-
-
 
 
 # Servir le frontend
