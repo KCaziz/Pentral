@@ -1,18 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { UserCircleIcon, IdentificationIcon, EnvelopeIcon, KeyIcon, TrashIcon } from "@heroicons/react/24/outline";
+
 import { useNavigate } from "react-router-dom";
 
 import { AppSidebar } from "@/components/app-sidebar"
-import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
+import { Activity } from "lucide-react";
 import { Separator } from "@/components/ui/separator"
 import {
     SidebarInset,
@@ -104,86 +97,126 @@ export default function UserSettings() {
 
 
     if (loading) {
-        return <div className="text-center py-8">Chargement...</div>;
-    }
+    return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-yellow-900 to-slate-900 flex items-center justify-center">
+      <div className="relative">
+        <div className="w-20 h-20 border-4 border-yellow-200 border-t-yellow-600 rounded-full animate-spin"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <Activity className="w-8 h-8 text-yellow-400 animate-pulse" />
+        </div>
+      </div>
+    </div>;
+  }
 
     return (
         <SidebarProvider>
             <AppSidebar user={user} />
             <SidebarInset>
-                <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-                    <div className="flex items-center gap-2">
-                        <SidebarTrigger />
-                        <Separator orientation="vertical" className="h-4" />
-                    </div>
-                    <img src={cloudSvg} alt="cloud" className=" ml-auto mb-10  size-32" />
-                    <img src={cloudSvg} alt="cloud" className=" ml-[50%] mt-20 size-32" />
+ <div className="relative overflow-hidden">
+  {/* Arrière-plan avec nuages positionnés de manière plus harmonieuse */}
+  <div className="absolute inset-0 -z-10">
+    <img src={cloudSvg} alt="cloud" className="absolute top-20 left-10 size-32 opacity-40" />
+    <img src={cloudSvg} alt="cloud" className="absolute top-1/4 right-20 size-40 opacity-30" />
+    <img src={cloudSvg} alt="cloud" className="absolute bottom-1/3 left-1/4 size-36 opacity-25" />
+    <img src={cloudSvg} alt="cloud" className="absolute bottom-20 right-10 size-28 opacity-35" />
+  </div>
 
-                </header>
-                <div className="flex">
-                    <div className="w-full pb-10">
-                        <div className="min-h-screen flex items-center justify-center">
-                            <div className="p-8 rounded-lg w-full max-w-2xl">
-                                <h2 className="text-2xl  font-bold mb-6 text-center">
-                                    Paramètres du profil
-                                </h2>
+  {/* Header simplifié */}
+  <header className="flex h-16 items-center px-6  backdrop-blur-sm border-b border-amber-100">
+    <div className="flex items-center gap-3">
+      <SidebarTrigger className=" hover:text-amber-800 transition-colors" />
+      <Separator orientation="vertical" className="h-6 bg-amber-200" />
+      <h2 className="text-xl font-extrabold text-amber-400 italic">Paramétres</h2>
+    </div>
+  </header>
 
-                                {message && <p className="text-yellow-500 mb-4 text-center">{message}</p>}
+  {/* Contenu principal */}
+  <main className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4">
+    <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg overflow-hidden border border-amber-100">
+      {/* En-tête de carte */}
+      <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-6 border-b border-amber-200">
+        <div className="flex items-center justify-center space-x-3">
+          <UserCircleIcon className="h-8 w-8 text-amber-600" />
+          <h2 className="text-2xl font-bold text-gray-800">Profil Utilisateur</h2>
+        </div>
+        {message && (
+          <div className="mt-3 p-2 bg-amber-100 text-amber-800 rounded text-center text-sm">
+            {message}
+          </div>
+        )}
+      </div>
 
-                                <form onSubmit={handleSubmit}>
-                                    <div className="grid grid-cols-1 gap-4 mb-4">
-                                        <div  >
-                                            <label className="block font-semibold mb-1 !important">
-                                                Nom d'utilisateur
-                                            </label>
-                                            <Input
-                                                type="text"
-                                                name="username"
-                                                value={user.username}
-                                                onChange={handleInputChange}
-                                                className="bg-white dark:bg-gray-800 dark:text-white"
-                                                required
-                                            />
-                                        </div>
+      {/* Formulaire */}
+      <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <div className="space-y-4">
+          {/* Champ Nom d'utilisateur */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+              <IdentificationIcon className="h-4 w-4 text-amber-500 mr-2" />
+              Nom d'utilisateur
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                name="username"
+                value={user.username}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-all"
+                required
+              />
+            </div>
+          </div>
 
-                                        <div>
-                                            <label className="block font-semibold mb-1">
-                                                Email
-                                            </label>
-                                            <Input
-                                                type="email"
-                                                name="email"
-                                                value={user.email}
-                                                onChange={handleInputChange}
-                                                className="bg-white dark:bg-gray-800 dark:text-white"
-                                                required
-                                            />
-                                        </div>
-                                    </div>
+          {/* Champ Email */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+              <EnvelopeIcon className="h-4 w-4 text-amber-500 mr-2" />
+              Adresse Email
+            </label>
+            <div className="relative">
+              <input
+                type="email"
+                name="email"
+                value={user.email}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-all"
+                required
+              />
+            </div>
+          </div>
+        </div>
 
-                                    <div className="flex justify-center gap-4 items-center mt-6">
+        {/* Actions */}
+        <div className="justify-center items-center text-center">
+          <button
+            type="submit"
+            className="justify-center px-6 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2"
+          >
+            Enregistrer les modifications
+          </button>
+        </div>
 
-                                        <Button variant="destructive" onClick={handleDeleteAccount}>
-                                            Supprimer votre compte
-                                        </Button>
-
-
-                                        <Button type="submit" variant="outline" className="bg-primary hover:bg-yellow-500">
-                                            Enregistrer
-                                        </Button>
-                                    </div>
-
-                                    <Link
-                                        to="/password"
-                                        className="text-blue-700 text-center block mt-6"
-                                    >
-                                        Modifier le mot de passe
-                                    </Link>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <div className="space-y-3 justify-center items-center text-center mt-4">
+            <Link
+              to="/password"
+              className="inline-flex items-center text-sm text-amber-600 hover:text-amber-800 hover:underline mx-3"
+            >
+              <KeyIcon className="h-4 w-4 mx-1" />
+              Modifier le mot de passe
+            </Link>
+            
+            <button
+              type="button"
+              onClick={handleDeleteAccount}
+              className="inline-flex items-center text-sm text-red-600 hover:text-red-800 hover:underline"
+            >
+              <TrashIcon className="h-4 w-4 mr-1" />
+              Supprimer le compte
+            </button>
+          </div>
+      </form>
+    </div>
+  </main>
+</div>
             </SidebarInset>
         </SidebarProvider>
     );

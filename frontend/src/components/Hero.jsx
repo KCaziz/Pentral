@@ -31,7 +31,7 @@ export const Hero = () => {
         <div className="space-y-4 md:space-y-0 md:space-x-4">
 
           <Link
-            to="/scan"
+            to="/signup"
             className={`w-full md:w-1/3 ${buttonVariants({
               variant: "outline",
             })}`}

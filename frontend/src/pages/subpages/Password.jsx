@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useNavigate } from "react-router-dom";
+import { LockClosedIcon, KeyIcon, LockOpenIcon, ShieldCheckIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 
+import { useNavigate } from "react-router-dom";
+import { Activity } from "lucide-react";
 import { AppSidebar } from "@/components/app-sidebar"
 
 import { Separator } from "@/components/ui/separator"
@@ -84,85 +84,134 @@ export default function Password() {
         }
     };
     if (!user) {
-        return <div className="text-center py-8">Chargement...</div>;
+        return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-yellow-900 to-slate-900 flex items-center justify-center">
+            <div className="relative">
+                <div className="w-20 h-20 border-4 border-yellow-200 border-t-yellow-600 rounded-full animate-spin"></div>
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                    <Activity className="w-8 h-8 text-yellow-400 animate-pulse" />
+                </div>
+            </div>
+        </div>;
     }
 
     return (
         <SidebarProvider>
             <AppSidebar user={user} />
             <SidebarInset>
-                <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-                    <div className="flex items-center gap-2">
-                        <SidebarTrigger />
-                        <Separator orientation="vertical" className="h-4" />
+                {/* Header simplifié et élégant */}
+                <header className="flex h-16 items-center px-6 border-b border-amber-200">
+                    <div className="flex items-center gap-3">
+                        <SidebarTrigger className="hover:text-amber-500 transition-colors" />
+                        <Separator orientation="vertical" className="h-6 bg-amber-200" />
+                        <h1 className="text-xl font-extrabold text-amber-400 italic">Mot de passe</h1>
                     </div>
-                    <img src={cloudSvg} alt="cloud" className=" ml-auto mb-10  size-32" />
-                    <img src={cloudSvg} alt="cloud" className=" ml-[50%] mb-10 size-32" />
-
                 </header>
 
-                <div className="flex">
-                    <div className="w-full">
-                        <div className="min-h-screen flex pt-5 justify-center ">
-                            <div className=" p-8 rounded-lg shadow-lg w-full max-w-xl">
-                                <h2 className="text-2xl font-bold mb-6 text-center">Modifier le mot de passe</h2>
-
-                                {errorMessage && <p className="text-red-500 mb-4 text-center">{errorMessage}</p>}
-                                {successMessage && <p className="text-green-500 mb-4 text-center">{successMessage}</p>}
-
-                                <form onSubmit={handleSubmit}>
-                                    <div className="mb-4">
-                                        <label className="block font-semibold mb-2">Mot de passe actuel</label>
-                                        <input
-                                            type="password"
-                                            name="currentPassword"
-                                            value={formData.currentPassword}
-                                            onChange={handleInputChange}
-                                            className="w-full border-gray-300 p-3 rounded-md focus:outline-none focus:border-indigo-500"
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="mb-4">
-                                        <label className="block font-semibold mb-2">Nouveau mot de passe</label>
-                                        <input
-                                            type="password"
-                                            name="newPassword"
-                                            value={formData.newPassword}
-                                            onChange={handleInputChange}
-                                            className="w-full border-gray-300 p-3 rounded-md focus:outline-none focus:border-indigo-500"
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="mb-4">
-                                        <label className="block font-semibold mb-2">Confirmer le nouveau mot de passe</label>
-                                        <input
-                                            type="password"
-                                            name="newPasswordConfirm"
-                                            value={formData.newPasswordConfirm}
-                                            onChange={handleInputChange}
-                                            className="w-full border-gray-300 p-3 rounded-md focus:outline-none focus:border-indigo-500"
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="flex justify-between items-center">
-                                        <Button type="submit" variant="outline" className="w-auto px-4 py-2 bg-primary hover:bg-yellow-500">
-                                            Confirmer
-                                        </Button>
-                                        <Link to="/settings">
-                                            <Button variant="ghost" >
-                                                Compte
-                                            </Button>
-                                        </Link>
-                                    </div>
-                                </form>
+                {/* Contenu principal */}
+                <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-6">
+                    <div className="w-full max-w-md bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        {/* En-tête de carte */}
+                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-6 border-b border-amber-100">
+                            <div className="flex flex-col items-center">
+                                <KeyIcon className="h-10 w-10 text-amber-600 mb-3" />
+                                <h2 className="text-2xl font-bold text-gray-800 text-center">Modifier le mot de passe</h2>
+                                <p className="text-gray-500 text-sm mt-1">Pour votre sécurité, choisissez un mot de passe robuste</p>
                             </div>
                         </div>
+
+                        {/* Messages d'état */}
+                        {errorMessage && (
+                            <div className="mx-6 mt-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm flex items-start">
+                                <ExclamationCircleIcon className="h-5 w-5 mr-2 flex-shrink-0" />
+                                {errorMessage}
+                            </div>
+                        )}
+                        {successMessage && (
+                            <div className="mx-6 mt-4 p-3 bg-green-50 text-green-700 rounded-lg text-sm flex items-start">
+                                <CheckCircleIcon className="h-5 w-5 mr-2 flex-shrink-0" />
+                                {successMessage}
+                            </div>
+                        )}
+
+                        {/* Formulaire */}
+                        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+                            {/* Mot de passe actuel */}
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-gray-700 flex items-center">
+                                    <LockClosedIcon className="h-4 w-4 text-amber-500 mr-2" />
+                                    Mot de passe actuel
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type="password"
+                                        name="currentPassword"
+                                        value={formData.currentPassword}
+                                        onChange={handleInputChange}
+                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-all"
+                                        required
+                                        placeholder="••••••••"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Nouveau mot de passe */}
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-gray-700 flex items-center">
+                                    <LockOpenIcon className="h-4 w-4 text-amber-500 mr-2" />
+                                    Nouveau mot de passe
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type="password"
+                                        name="newPassword"
+                                        value={formData.newPassword}
+                                        onChange={handleInputChange}
+                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-all"
+                                        required
+                                        placeholder="Au moins 8 caractères"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Confirmation */}
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-gray-700 flex items-center">
+                                    <ShieldCheckIcon className="h-4 w-4 text-amber-500 mr-2" />
+                                    Confirmer le nouveau mot de passe
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type="password"
+                                        name="newPasswordConfirm"
+                                        value={formData.newPasswordConfirm}
+                                        onChange={handleInputChange}
+                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-all"
+                                        required
+                                        placeholder="Retapez votre nouveau mot de passe"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 pt-4">
+                                <Link
+                                    to="/settings"
+                                    className="inline-flex items-center justify-center px-4 py-2.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-colors"
+                                >
+                                    <ArrowLeftIcon className="h-4 w-4 mr-2" />
+                                    Retour au compte
+                                </Link>
+
+                                <button
+                                    type="submit"
+                                    className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2"
+                                >
+                                    Mettre à jour
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-
             </SidebarInset>
         </SidebarProvider>
     );

@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { AppSidebar } from "@/components/app-sidebar"
-import { Button } from "@material-tailwind/react";
 import { ArrowBigLeft } from "lucide-react";
+import { Separator } from "@/components/ui/separator"
+import { Activity } from "lucide-react";
+
 import { io } from "socket.io-client";
 const socket = io("http://127.0.0.1:5000"); // ou l’URL de ton backend Flask
 
@@ -65,7 +67,7 @@ function Scan() {
       setError("Aucun ID utilisateur trouvé");
     }
 
-    
+
   }, []);
 
 
@@ -88,7 +90,7 @@ function Scan() {
             }
             setCommand(data.command);
 
-            }
+          }
         } catch (error) {
           console.error("Erreur lors de la récupération du statut:", error);
         }
@@ -222,26 +224,44 @@ function Scan() {
     };
   }, []);
 
-  if (!user && !scan) return <p>Chargement...</p>
+    if (!user || !scan) {
+    return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-yellow-900 to-slate-900 flex items-center justify-center">
+      <div className="relative">
+        <div className="w-20 h-20 border-4 border-yellow-200 border-t-yellow-600 rounded-full animate-spin"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <Activity className="w-8 h-8 text-yellow-400 animate-pulse" />
+        </div>
+      </div>
+    </div>;
+  }
 
   return (
     <SidebarProvider>
       <AppSidebar user={user} />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 bg-black">
-          <div className="flex items-center gap-2 text-white">
-            <div className="mt-2">
-              <SidebarTrigger />
-              <a href="" className="mt-0 pt-0" onClick={() => navigate(`/project-dashboard/${scan_project}`)}>
-                <Button variant="outline" className="m-2 mt-0 pt-0 text-white hover:bg-primary hover:text-white"> <ArrowBigLeft /> </Button>
-              </a>
-            </div>
-            {/* <Separator orientation="vertical" className="h-4" /> */}
-          </div>
-          <img src={cloudSvg} alt="cloud" className=" ml-auto mb-10  size-32" />
-          <img src={cloudSvg} alt="cloud" className=" ml-[50%] mb-10 size-32" />
+        <header className="flex h-16 items-center justify-between px-6 bg-black border-b border-amber-400/20">
+          <div className="flex items-center gap-3">
+            <SidebarTrigger className="text-white hover:text-amber-300 transition-colors" />
 
+            <div className="flex items-center gap-3">
+              <a
+                onClick={() => navigate(`/project-dashboard/${scan_project}`)}
+                className="ml-0 inline-flex items-center justify-center p-2 rounded-full hover:bg-amber-400/10 transition-colors"
+                title="Retour au projet"
+              >
+                <ArrowBigLeft className="h-5 w-5 text-white" />
+              </a>
+
+              <Separator orientation="vertical" className="h-6 bg-white mr-6" />
+
+              <h2 className="text-xl font-bold text-amber-400 italic tracking-tight">
+                Scan Rapide
+              </h2>
+
+            </div>
+          </div>
         </header>
+
         <div className="h-screen bg-gradient-to-b from-black to-yellow-300 flex flex-col items-center">
           <div className="min-h-screen  flex items-center justify-center mb-0 pb-0">
             <div className="bg-black mr-4 rounded-lg shadow-lg w-96 h-[300px] overflow-y-auto font-mono text-green-400 whitespace-pre-wrap border border-green-900">

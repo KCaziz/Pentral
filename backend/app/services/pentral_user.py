@@ -1203,7 +1203,7 @@ def generate_command_validation_prompt(command, target, phase, results):
     return response
 
 
-def main(target):
+def main(target, iterations):
     print("=== Générateur de Commandes d'Énumération Amélioré ===")
 
     # # Boucle pour demander une cible valide
@@ -1215,6 +1215,7 @@ def main(target):
     # print(f"Cible: {target}")
     
     print(target)
+    print(iterations)
 
     if validate_target(target):
         print("target valide") 
@@ -1471,9 +1472,9 @@ def main(target):
         print("Réponse non reconnue. Le programme va passer à la prochaine itération.")
         # Passage à la phase suivante en cas de réponse invalide
     
-    if command:
-        if len(command) < 150 :
-            result = execute_command_docker(command)
+    if enumerate_command:
+        if len(enumerate_command) < 150 :
+            result = execute_command_docker(enumerate_command)
         else :
             print("[AVERTISSEMENT] La commande est trop longue (>50 caractères).")
             result = "error : commande trop longue"
@@ -1482,23 +1483,23 @@ def main(target):
                 install_success = execute_install_docker(insall_command)
                 if not install_success:
                     print(f"[ERREUR] Impossible d'installer l'outil '{tool_name}',ne plus proposer de commandes avec.")
-                    history.append({"command": command, "result": f"[ERREUR] L'outil '{tool_name}' n'a pas pu être installé."})
+                    history.append({"command": enumerate_command, "result": f"[ERREUR] L'outil '{tool_name}' n'a pas pu être installé."})
                     
                 
                 # Réexécute la commande après installation
                 print(f"[INFO] Réexécution de la commande après installation de l'outil '{tool_name}'.")
-                result = execute_command_docker(command)
+                result = execute_command_docker(enumerate_command)
 
                 if not result:  # Vérifie simplement si la commande a échoué (pas de "not found")
                     print(f"[ERREUR] La commande a échoué après installation de l'outil '{tool_name}'.")
-                    history.append({"command": command, "result": "[ERREUR] La commande a échoué après installation de l'outil."})
-        
+                    history.append({"command": enumerate_command, "result": "[ERREUR] La commande a échoué après installation de l'outil."})
+
         if  not isinstance(result, str) or "error" in result.lower() or "failed" in result.lower() or "not found" in result.lower() or result.strip() == "":
             print(f"[DEBUG] Erreur détectée dans la commande renvoie au llm pour correction")
 
             prompt_error = f"""
             veuillez corrigez cette commande 
-            {command}
+            {enumerate_command}
             on a eu cette erreur aprés son execution 
             {result}
             Veuillez proposer une version CORRIGÉE de la commande qui:
@@ -1520,8 +1521,8 @@ def main(target):
             print(f"[DEBUG] Réponse corrigée du llm : {corrected_response}")
             formated_response = yaml.safe_load(corrected_response)
             if formated_response and is_valid_tool_yaml(corrected_response):
-                command = formated_response['enumerate_command']
-                result = execute_command_docker(command)
+                enumerate_command = formated_response['enumerate_command']
+                result = execute_command_docker(enumerate_command)
             else :
                 print("[AVERTISSEMENT] Impossible de corriger la commande. Utilisation de la version originale.")
 
@@ -1562,7 +1563,7 @@ def main(target):
         history.append({"command": response, "result": "[ERREUR] La commande a échoué."})
         
     # Phase 2 à 10 : Prompts suivants (9 étapes)
-    for step in range(1, 4):  # 10 étapes au total
+    for step in range(1, iterations):  # 10 étapes au total
         print(f"\n=== Étape {step + 1} / 10 ===")
 
         # Détermination de la phase actuelle basée sur l'étape
@@ -2042,9 +2043,9 @@ def main(target):
             print("Réponse non reconnue. Le programme va passer à la prochaine itération.")
             # Passage à la phase suivante en cas de réponse invalide
         
-        if command:
-            if len(command) < 150 :
-                result = execute_command_docker(command)
+        if enumerate_command:
+            if len(enumerate_command) < 150 :
+                result = execute_command_docker(enumerate_command)
             else :
                 print("[AVERTISSEMENT] La commande est trop longue (>50 caractères).")
                 result = "error : commande trop longue"
@@ -2053,16 +2054,16 @@ def main(target):
                     install_success = execute_install_docker(insall_command)
                     if not install_success:
                         print(f"[ERREUR] Impossible d'installer l'outil '{tool_name}',ne plus proposer de commandes avec.")
-                        history.append({"command": command, "result": f"[ERREUR] L'outil '{tool_name}' n'a pas pu être installé."})
-                        
-                    
+                        history.append({"command": enumerate_command, "result": f"[ERREUR] L'outil '{tool_name}' n'a pas pu être installé."})
+
+
                     # Réexécute la commande après installation
                     print(f"[INFO] Réexécution de la commande après installation de l'outil '{tool_name}'.")
-                    result = execute_command_docker(command)
+                    result = execute_command_docker(enumerate_command)
 
                     if not result:  # Vérifie simplement si la commande a échoué (pas de "not found")
                         print(f"[ERREUR] La commande a échoué après installation de l'outil '{tool_name}'.")
-                        history.append({"command": command, "result": "[ERREUR] La commande a échoué après installation de l'outil."})
+                        history.append({"command": enumerate_command, "result": "[ERREUR] La commande a échoué après installation de l'outil."})
             if  not isinstance(result, str) or "error" in result.lower() or "failed" in result.lower() or "not found" in result.lower() or result.strip() == "":
                 MAX_RETRIES = 2
                 retry_count = 0
@@ -2105,8 +2106,8 @@ def main(target):
                     try:
                         formated_response = yaml.safe_load(corrected_response)
                         if formated_response and is_valid_tool_yaml(corrected_response):
-                            command = formated_response['enumerate_command']
-                            result = execute_command_docker(command)
+                            enumerate_command = formated_response['enumerate_command']
+                            result = execute_command_docker(enumerate_command)
                         else:
                             print("[AVERTISSEMENT] Format YAML invalide. Tentative suivante...")
                             result = "error : YAML invalide"
@@ -2267,4 +2268,4 @@ def main(target):
     print("\n[INFO] Historique des commandes sauvegardé pour amélioration continue.")
     return template_data
 if __name__ == "__main__":
-    main("default")
+    main("default", "defaut")

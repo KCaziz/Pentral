@@ -18,6 +18,7 @@ const scanSchema = new Schema({
     }
   ],
   report_url: String,
+  iterations: { type: Number, default: 3 },
   created_at: { type: Date, default: Date.now }
 });
 

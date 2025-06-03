@@ -118,7 +118,7 @@ export function AppSidebar({ user, ...props }) {
             onClick: handleAddProject,
           },
           {
-            name: "Gestion des projets",
+            name: "Projets",
             url: "/gestionproject",
             icon: Frame,
           },

@@ -1,14 +1,6 @@
 import { AppSidebar } from "@/components/app-sidebar"
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
+import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import { Separator } from "@/components/ui/separator"
 import {
   SidebarInset,
@@ -16,7 +8,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { use, useEffect, useState } from "react"
-import cloudSvg from "@/assets/japanese-style-cloud-svgrepo-com (2).svg"
+import { Activity } from "lucide-react";
 
 
 export default function Dashboard() {
@@ -103,38 +95,54 @@ export default function Dashboard() {
   useEffect(() => {
     if (scans.length > 0) {
       const stats = estimateTimeSaved(scans);
-      setTempsMoyenMinutes(stats.averageSaved);
+      setTempsMoyenMinutes(stats.averageSpeed);
       setTempsGagneEstimeMinutes(stats.totalSavedMinutes);
       setNbscans_effectues(stats.scansCount);
       setChart(compterScansParJour(scans));
     }
   }, [scans]);
 
-  // je ne suis pas sur de la justesse me des calculs
-  function estimateTimeSaved(scans) {
-    const finishedScans = scans.filter(scan => scan.finished_at);;
+function estimateTimeSaved(scans) {
+  const finishedScans = scans.filter(scan => scan.started_at && scan.finished_at);
 
-    if (finishedScans.length === 0) return { averageSaved: 0, totalSavedMinutes: 0 };
-
-    const totalTimeSpent = finishedScans.reduce((acc, scan) => {
-      const start = new Date(scan.started_at);
-      const end = new Date(scan.finished_at);
-      const diffMinutes = (end - start) / (1000 * 60); // conversion en minutes
-      return acc + diffMinutes;
-    }, 0);
-
-    const averageHumanPentestTime = 240; // minutes (4h)
-    const averageTimeSpent = totalTimeSpent / finishedScans.length;
-    const averageSaved = averageHumanPentestTime - averageTimeSpent;
-
-    const totalSavedMinutes = (averageHumanPentestTime * finishedScans.length) - totalTimeSpent;
-
+  if (finishedScans.length === 0) {
     return {
-      averageSaved: Math.round(averageSaved),
-      totalSavedMinutes: Math.round(totalSavedMinutes),
-      scansCount: finishedScans.length
+      averageSpeed: 0,
+      totalSavedMinutes: 0,
+      scansCount: 0
     };
+  }
+
+  const averageHumanPentestTime = 120; // minutes (estimation manuelle)
+
+  let totalTimeSpent = 0;
+
+  for (const scan of finishedScans) {
+    const start = new Date(scan.started_at);
+    const end = new Date(scan.finished_at);
+
+    const diffMinutes = (start-end) / (1000 * 60);
+    console.log(diffMinutes);
+    
+
+    // Ignorer les valeurs négatives ou absurdes
+    if (!isNaN(diffMinutes) && diffMinutes > 0 && diffMinutes < 600) {
+      totalTimeSpent += diffMinutes;
+    }
+  }
+
+  const validScanCount = finishedScans.length;
+  const averageTimeSpent = totalTimeSpent / validScanCount;
+
+  const totalHumanTime = validScanCount * averageHumanPentestTime;
+  const totalSavedMinutes = totalHumanTime - totalTimeSpent;
+
+  return {
+    averageSpeed: Math.round(averageTimeSpent),
+    totalSavedMinutes: Math.max(0, Math.round(totalSavedMinutes)),
+    scansCount: validScanCount
   };
+}
 
 
   // compter les scans par jour
@@ -153,62 +161,95 @@ export default function Dashboard() {
     }));
   };
 
-  if (!scans || !user) return <p>Chargement...</p>
-  return (
+  function compterScansParMois(scans) {
+    const counts = {};
 
-    <SidebarProvider>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-        <div className="flex items-center gap-2">
-    <SidebarTrigger />
-    <Separator orientation="vertical" className="h-4" />
-  </div>
-  {/* <img src={cloudSvg} alt="cloud" className=" ml-auto mb-10  size-32" />
-  <img src={cloudSvg} alt="cloud" className=" ml-[50%] mt-20 size-32" /> */}
+    scans.forEach(scan => {
+      const date = new Date(scan.created_at);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+      counts[monthKey] = (counts[monthKey] || 0) + 1;
+    });
 
-        </header>
-        <div className="flex flex-1 flex-col gap-6 p-6 pt-0">
-          {/* Section cartes */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+    return Object.keys(counts).map(key => ({ mois: key, scans: counts[key] }));
+  }
 
-            <div className="aspect-video flex flex-col justify-center items-center rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg">
-              <p className="text-lg font-semibold">Nombre de projets</p>
-              <p className="text-4xl font-bold">{nbProjects}</p>
-            </div>
 
-            <div className="aspect-video flex flex-col justify-center items-center rounded-xl bg-gradient-to-r from-green-400 to-emerald-600 text-white shadow-lg">
-              <p className="text-lg font-semibold">Nombre de scans effectués</p>
-              <p className="text-4xl font-bold">{nbScans ? nbScans : 0}</p>
-            </div>
-
-            <div className="aspect-video flex flex-col justify-center items-center rounded-xl bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg">
-              <p className="text-lg font-semibold">Temps gagné</p>
-              <p className="text-2xl font-bold">{(tempsGagneEstimeMinutes / 60).toFixed(1)} heures</p>
-            </div>
-
-            <div className="aspect-video flex flex-col justify-center items-center rounded-xl bg-gradient-to-r from-pink-400 to-red-500 text-white shadow-lg">
-              <p className="text-lg font-semibold">Temps moyen par scan</p>
-              <p className="text-2xl font-bold">{tempsMoyenMinutes.toFixed(1)} min</p>
-            </div>
-
-          </div>
-
-          {/* Section graph */}
-          <div className="min-h-[400px] flex-1 rounded-xl bg-black bg-opacity-50 p-6">
-            <h2 className="text-center text-yellow-400 font-bold mb-4 text-xl">Scans par Jour</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={chart} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#555" />
-                <XAxis dataKey="date" stroke="#ccc" />
-                <YAxis allowDecimals={false} stroke="#ccc" />
-                <Tooltip />
-                <Bar dataKey="scans" fill="#00C49F" radius={[10, 10, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+  if (!user || !scans) {
+    return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-yellow-900 to-slate-900 flex items-center justify-center">
+      <div className="relative">
+        <div className="w-20 h-20 border-4 border-yellow-200 border-t-yellow-600 rounded-full animate-spin"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <Activity className="w-8 h-8 text-yellow-400 animate-pulse" />
         </div>
-      </SidebarInset>
-    </SidebarProvider>
+      </div>
+    </div>;
+  }
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white">
+      <SidebarProvider>
+        <AppSidebar user={user} />
+        <SidebarInset>
+          <header className="flex h-16 items-center px-6 border-b border-amber-100">
+            <SidebarTrigger />
+            <Separator orientation="vertical" className="mx-4 h-6 bg-amber-300" />
+            <h2 className="text-xl font-extrabold text-amber-400 italic">Dashboard Utilisateur</h2>
+          </header>
+
+          <div className="flex flex-col gap-8 p-6">
+            {/* Cartes statistiques */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="rounded-xl bg-gradient-to-r from-amber-700 to-orange-600 p-5 shadow-lg" title="Nombre total de projets que vous avez créés.">
+                <p className="text-sm text-slate-100">Projets</p>
+                <p className="text-3xl font-bold">{nbProjects}</p>
+              </div>
+
+              <div className="rounded-xl bg-gradient-to-r from-yellow-600 to-orange-500 p-5 shadow-lg" title="Total de scans que vous avez exécutés.">
+                <p className="text-sm text-slate-100">Scans</p>
+                <p className="text-3xl font-bold">{nbScans || 0}</p>
+              </div>
+
+              <div className=" group relative rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 p-5 shadow-lg" >
+                <p className="flex text-sm text-slate-100">Temps gagné  <InformationCircleIcon className="h-4 w-4 pl-1 text-black cursor-help" />
+                <div className="z-4 absolute hidden group-hover:block w-64 p-2 left-8 top-20 bg-gray-300 border border-amber-200 rounded-lg shadow-lg text-xs text-gray-600">
+                  Temps totale gagné par rapport à un pentest manuel estimé à 2h par scan.
+                </div>
+                </p>
+
+                <p className="text-2xl font-bold">{(tempsGagneEstimeMinutes / 60).toFixed(1)} h</p>
+              </div>
+
+              <div className="group relative rounded-xl bg-gradient-to-r from-green-600 to-emerald-800 p-5 shadow-lg">
+                <p className="text-sm text-slate-100 flex">Durée moyenne  <InformationCircleIcon className="h-4 w-4 pl-1 text-black cursor-help" />
+
+                <div className="z-4 absolute hidden group-hover:block w-64 p-2 left-8 top-20 bg-gray-300 border border-amber-200 rounded-lg shadow-lg text-xs text-gray-600">
+                  Durée moyenne d'exécution d'un scan.
+                </div>
+
+                </p>
+                <p className="text-2xl font-bold">{tempsMoyenMinutes} min</p>
+
+              </div>
+            </div>
+            {/* Graphique mensuel */}
+            <div className="rounded-xl p-6 bg-slate-800 border border-slate-600 shadow">
+              <h3 className="text-xl font-bold text-amber-400 mb-4 text-center">Scans par mois</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={compterScansParMois(scans)} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
+                  <XAxis dataKey="mois" stroke="#cbd5e1" />
+                  <YAxis stroke="#cbd5e1" />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: "#1f2937", borderColor: "#facc15", color: "#fef3c7" }}
+                    labelStyle={{ color: "#fcd34d" }}
+                  />
+                  <Bar dataKey="scans" fill="#fbbf24" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    </div>
+
   )
 }

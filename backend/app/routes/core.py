@@ -94,6 +94,7 @@ def run_command():
     data = request.json
     target = data.get("target", "")
     
+    
     if not target:
         return jsonify({"error": "Commande invalide"}), 400
     
@@ -571,7 +572,8 @@ def create_empty_scan():
         "status": "waiting",
         "commands_executed": [],
         "type" : data["type"],
-        "created_at": datetime.utcnow()
+        "created_at": datetime.utcnow(),
+        "iterations": data["iterations"]
     }
 
     result = scans_collection.insert_one(scan)
@@ -587,6 +589,13 @@ def create_empty_scan():
 def start_scan(scan_id):
     data = request.json
     target = data.get("target")
+    scan = get_scan_data(scan_id) 
+    if not scan:
+        return jsonify({"error": "Scan introuvable"}), 404
+
+    print("Scan trouvé :", scan)
+    
+    iteration = scan.get("iterations")
     project_title, project_name = get_project_from_scan(scan_id)
     if not project_title:
         return jsonify({"error": "Projet introuvable pour ce scan"}), 404
@@ -610,7 +619,7 @@ def start_scan(scan_id):
 
         session_id = request.sid if hasattr(request, 'sid') else None
         
-        output = pentral_no_user.main(target)
+        output = pentral_no_user.main(target, iteration)
         
         if session_id and session_id in active_socket_sessions:
             socketio.emit("llm_end", {"final_text": str(output)}, room=session_id)
@@ -665,7 +674,7 @@ def start_scan(scan_id):
             {"_id": ObjectId(scan_id)},
             {
                 "$set": {
-                    "report_url": output_path,
+                    "report_url": relative_url,
                     "status": "completed",
                     "finished_at": datetime.utcnow()
                 }
@@ -686,12 +695,28 @@ def start_scan(scan_id):
         )
         return jsonify({"error": str(e)}), 500
 
-   
+
+def get_scan_data(scan_id):
+    scan = scans_collection.find_one({"_id": ObjectId(scan_id)})
+    if not scan:
+        return None
+    scan["_id"] = str(scan["_id"])
+    scan["project_id"] = str(scan["project_id"])
+    scan["launched_by"] = str(scan["launched_by"])
+    return sanitize_mongo_document(scan)
+
 ############################# SCAN 2  Lancement USER ######################
 @core_bp.route("/api/scans/<scan_id>/start_user", methods=["POST"])
 def start_scan_reason(scan_id):
     data = request.json
     target = data.get("target")
+    scan = get_scan_data(scan_id) 
+    if not scan:
+        return jsonify({"error": "Scan introuvable"}), 404
+
+    print("Scan trouvé :", scan)
+    
+    iteration = scan.get("iterations")
 
     project_title, project_name = get_project_from_scan(scan_id)
     if not project_title:
@@ -717,7 +742,7 @@ def start_scan_reason(scan_id):
         script_status["llm_finished"] = False
         session_id = request.sid if hasattr(request, 'sid') else None
 
-        output = pentral_user.main(target)
+        output = pentral_user.main(target, iteration)
         
         if session_id and session_id in active_socket_sessions:
             socketio.emit("llm_end", {"final_text": str(output)}, room=session_id)
@@ -770,7 +795,7 @@ def start_scan_reason(scan_id):
             {"_id": ObjectId(scan_id)},
             {
                 "$set": {
-                    "report_url": output_path,
+                    "report_url": relative_url,
                     "status": "completed",
                     "finished_at": datetime.utcnow()
                 }
@@ -814,7 +839,17 @@ def add_command_to_scan(scan_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
- 
+#################### REPORT MANAGEMENT ######################
+@core_bp.route("/static/reports/<path:filename>")
+def serve_report(filename):
+    full_path = os.path.join(os.path.dirname(__file__), "../static/reports")
+    return send_from_directory(full_path, filename)
+
+@core_bp.route('/static/reports/<path:filename>/dl')
+def download_report(filename):
+    full_path = os.path.join(os.path.dirname(__file__), "../static/reports")
+    return send_from_directory(full_path, filename, as_attachment=True, download_name=filename)
+
 ################## ADMIN MANAGEMENT ######################
 def is_admin_required(f):
     @wraps(f)

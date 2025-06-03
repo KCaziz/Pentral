@@ -17,17 +17,7 @@ def create_app():
     
     
     CORS(app, resources={r"/*": {"origins": "*"}})
-# Enable CORS
-#     CORS(app, resources={r"/*": {"origins": "*"}})
-#     CORS(app, resources={
-#   r"/api/*": {
-#     "origins": ["http://localhost:3000","http://127.0.0.1:3000", "https://votre-domaine.com"],
-#     "methods": ["GET", "POST", "PUT", "DELETE"],
-#     "allow_headers": ["Content-Type"]
-#   }
-# })
-    
-    # Enregistrement des Blueprints
+
     from .routes.core import core_bp
     app.register_blueprint(core_bp)
     

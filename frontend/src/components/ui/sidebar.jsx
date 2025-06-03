@@ -239,7 +239,7 @@ const SidebarTrigger = React.forwardRef(({ className, onClick, ...props }, ref) 
   }, [])
 
   return (
-    <div>
+    <div className="flex items-center">
       <Button
         ref={ref}
         data-sidebar="trigger"

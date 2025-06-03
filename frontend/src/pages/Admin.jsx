@@ -489,7 +489,7 @@ export default function AdminDashboard() {
                             value={statsadv.TotalScansDuration}
                             color="from-amber-800/20 to-slate-800/20"
                             delay={400} />
-                            
+
                             <StatCard
                                 icon={Hourglass}
                                 title="Durée moyenne scan"
@@ -704,7 +704,6 @@ export default function AdminDashboard() {
                                     </BarChart>
                                 </ResponsiveContainer>
                             </div>
-
                         </div>
                     )}
                 </div>

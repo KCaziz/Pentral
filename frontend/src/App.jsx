@@ -3,7 +3,6 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import Scan from "./pages/scan";
 import Scan_no_user from "./pages/scan_no_user";
-import Scan_reason from "./pages/scan_reason";
 import Scan_user from "./pages/scan_user";
 import NewScan from "./pages/subpages/NewScans";
 
@@ -30,7 +29,6 @@ const App = () => {
       <Route path="/" element={<Home/>} />
       <Route path="/scan" element={<Scan/>} />
       <Route path="/scan_no_user/:scanId" element={<Scan_no_user/>} />
-      <Route path="/scan_reason/:scanId" element={<Scan_reason/>} />
       <Route path="/scan_user/:scanId" element={<Scan_user/>} />
       
       <Route path="/login" element={<Login/>} />

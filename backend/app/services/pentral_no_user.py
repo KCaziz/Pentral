@@ -1218,7 +1218,7 @@ def generate_command_validation_prompt(command, target, phase, results):
     return response
 
 
-def main(target):
+def main(target, iteration):
     print("=== Générateur de Commandes d'Énumération Amélioré ===")
 
     # # Boucle pour demander une cible valide
@@ -1230,6 +1230,7 @@ def main(target):
     # print(f"Cible: {target}")
     
     print(target)
+    print(f"Iteration: {iteration}")
 
     if validate_target(target):
         print("target valide") 
@@ -1582,7 +1583,7 @@ def main(target):
         history.append({"command": response, "result": "[ERREUR] La commande a échoué."})
         
     # Phase 2 à 10 : Prompts suivants (9 étapes)
-    for step in range(1, 2):  # 10 étapes au total
+    for step in range(1, iteration):  # 10 étapes au total
         print(f"\n=== Étape {step + 1} / 4 ===")
 
         # Détermination de la phase actuelle basée sur l'étape
@@ -2290,4 +2291,4 @@ def main(target):
     print("\n[INFO] Historique des commandes sauvegardé pour amélioration continue.")
     return template_data
 if __name__ == "__main__":
-    main("default")
+    main("default", "default")
