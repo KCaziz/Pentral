@@ -103,26 +103,26 @@ function AddProject() {
       <SidebarProvider>
         <AppSidebar user={user} />
         <SidebarInset>
-          <header className="flex h-16 items-center px-6  backdrop-blur-sm border-b border-amber-100">
+          <header className="flex h-16 items-center px-6  backdrop-blur-sm border-b border-red-200">
             <div className="flex items-center gap-3">
-              <SidebarTrigger className=" hover:text-amber-800 transition-colors" />
-              <Separator orientation="vertical" className="h-6 bg-amber-200" />
-              <h2 className="text-xl font-extrabold text-amber-400 italic w-full">Ajout Projet</h2>
+              <SidebarTrigger />
+              <Separator orientation="vertical" className="h-6 bg-primary" />
+              <h2 className="text-xl font-extrabold text-primary italic w-full">Ajout Projet</h2>
             </div>
-            <img src={cloudSvg} alt="cloud" className="ml-[0rem] -mt-[5rem] size-32 " />
-            <img src={cloudSvg} alt="cloud" className="ml-[10rem]  mt-[70rem] size-32 " />
+            {/* <img src={cloudSvg} alt="cloud" className="ml-[0rem] -mt-[5rem] size-32 " />
+            <img src={cloudSvg} alt="cloud" className="ml-[10rem]  mt-[70rem] size-32 " /> */}
             {/* <img src={cloudSvg} alt="cloud" className="ml-[10rem]  mt-[40rem] size-32 hidden md:block" /> */}
-            <img src={cloudSvg} alt="cloud" className="ml-[20em] mt-[20rem] size-32 hidden md:block" />
+            {/* <img src={cloudSvg} alt="cloud" className="ml-[20em] mt-[20rem] size-32 hidden md:block" /> */}
 
           </header>
 
 
           <main className="min-h-[calc(100vh-15rem)] flex items-center justify-center p-4">
-            <div className="w-full max-w-2xl bg-gradient-to-b from-amber-50 to-orange-200 rounded-xl shadow-lg overflow-hidden border border-amber-100">
+            <div className="w-full max-w-2xl bg-gradient-to-b from-red-50 to-red-300 rounded-xl shadow-lg overflow-hidden border border-red-100">
               {/* En-tête de carte */}
-              <div className="bg-amber-50 p-6 border-b border-amber-200">
+              <div className="bg-red-50 p-6 border-b border-red-200">
                 <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                  <PlusCircleIcon className="h-6 w-6 text-amber-500" />
+                  <PlusCircleIcon className="h-6 w-6 text-red-500" />
                   Créer un nouveau projet
                 </h2>
                 <p className="text-gray-500 mt-1">Remplissez les détails de votre nouveau projet</p>
@@ -137,10 +137,10 @@ function AddProject() {
                     <input
                       id="project-name"
                       type="text"
-                      placeholder="Mon Super Projet"
+                      placeholder="Mon Projet"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-all"
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-all"
                       required
                     />
                     <UserCircleIcon className="h-5 w-5 text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2" />
@@ -158,7 +158,7 @@ function AddProject() {
                       placeholder="Facultatif"
                       value={company}
                       onChange={(e) => setCompany(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-all"
+                      className="w-full px-4 py-2 border bg-white border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-all"
                     />
                     <BuildingOfficeIcon className="h-5 w-5 text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2" />
                   </div>
@@ -168,7 +168,7 @@ function AddProject() {
                 <div className="mt-6">
                   <button
                     type="submit"
-                    className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white py-3 px-4 rounded-lg font-semibold shadow-md hover:from-amber-600 hover:to-orange-600 transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2"
+                    className="w-full bg-gradient-to-r from-red-500 to-red-700 text-white py-3 px-4 rounded-lg font-semibold shadow-md hover:from-red-400 hover:to-red-600 transition-all focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2"
                   >
                     Créer le projet
                     <ArrowRightIcon className="h-5 w-5 inline-block ml-2" />

@@ -12,7 +12,7 @@ export const Sponsors = () => {
   return (
     <section id="sponsors" className="container pt-12 sm:py-16">
       <h2 className="text-center text-lg lg:text-4xl font-bold mb-8 ">
-        <span className="text-primary"> Investors </span> and founders
+        <span className="text-primary"> Encadrants </span> et promoteurs
       </h2>
       {/* max-w-[200px] */}
       <div className=" mx-auto flex flex-wrap justify-center items-center bg-black gap-4 p-4">

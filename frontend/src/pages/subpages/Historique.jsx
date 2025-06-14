@@ -1,5 +1,5 @@
 import { ArrowDownTrayIcon, TrashIcon, GlobeAltIcon, EyeIcon, ChevronUpDownIcon, ArrowPathIcon, ExclamationTriangleIcon, DocumentTextIcon, CalendarIcon } from "@heroicons/react/24/outline";
-import { Card, IconButton, Typography, Tooltip } from "@material-tailwind/react";
+import { Card, IconButton, Typography, Tooltip, Button } from "@material-tailwind/react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppSidebar } from "@/components/app-sidebar"
@@ -123,7 +123,7 @@ function Historique() {
 
 
   if (!user || !scans) {
-    return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-yellow-900 to-slate-900 flex items-center justify-center">
+    return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-red-900 to-slate-900 flex items-center justify-center">
       <div className="relative">
         <div className="w-20 h-20 border-4 border-yellow-200 border-t-yellow-600 rounded-full animate-spin"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
@@ -136,27 +136,19 @@ function Historique() {
     <SidebarProvider>
       <AppSidebar user={user} />
       <SidebarInset>
-        {/* <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2">
+        <header className="flex h-16 items-center px-4 sm:px-6">
+          <div className="flex items-center gap-3">
             <SidebarTrigger />
-            <Separator orientation="vertical" className="h-4" />
-          </div> */}
-          {/* <img src={cloudSvg} alt="cloud" className=" ml-auto mb-10  size-32" />
-          <img src={cloudSvg} alt="cloud" className=" ml-[50%] mt-20 size-32" /> */}
-              <header className="flex h-16 items-center px-6 ">
-      <div className="flex items-center gap-3">
-        <SidebarTrigger className="hover:text-amber-500 transition-colors" />
-        <Separator orientation="vertical" className="h-6 bg-amber-200" />
-        <h1 className="text-xl font-extrabold text-amber-400 italic">Historique</h1>
-      </div>
-    </header>
+            <Separator orientation="vertical" className="h-6 bg-primary" />
+            <h1 className="text-lg sm:text-xl font-extrabold text-primary italic">Historique</h1>
+          </div>
+        </header>
 
-        <Card className="mx-1  h-full overflow-x-auto max-w-full bg-transparent ">
-          <div className="relative rounded-2xl shadow-xl border border-yellow-900 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
-            <div className="flex justify-between items-center mb-4 px-2">
-              {/* <h2 className="text-xl italic font-extrabold text-amber-400">Historique  </h2> */}
+        <Card className="mx-1 h-full overflow-x-auto max-w-full bg-transparent">
+          <div className="relative rounded-2xl shadow-xl border border-yellow-900 p-2 sm:p-4">
+            <div className="flex justify-between items-center mb-4 px-1 sm:px-2">
               <select
-                className="px-3 py-2 rounded-md bg-slate-700 text-amber-200 border border-slate-600 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="px-2 py-1 sm:px-3 sm:py-2 rounded-md text-white bg-slate-700 border border-black text-xs sm:text-sm italic"
                 value={sortKey}
                 onChange={(e) => setSortKey(e.target.value)}
               >
@@ -167,174 +159,171 @@ function Historique() {
             </div>
 
             {/* Tableau avec thème sombre */}
-            <table className="w-full min-w-max table-auto text-left rounded-xl overflow-hidden shadow-2xl bg-gray-800 border border-gray-700">
-              <thead className="bg-gradient-to-br from-yellow-500 to-orange-400 shadow-lg">
-                <tr>
-                  {TABLE_HEAD.map((head, index) => (
-                    <th
-                      key={head}
-                      className={`p-4 pt-5 ${index === 0 ? "rounded-tl-xl" : ""} ${index === TABLE_HEAD.length - 1 ? "rounded-tr-xl" : ""
-                        }`}
-                    >
-                      <button
-                        onClick={() => handleSort(head.toLowerCase())}
-                        className="flex items-center justify-between w-full focus:outline-none"
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[600px] table-auto text-left rounded-xl overflow-hidden shadow-2xl pl-0 ml-0">
+                <thead className="bg-gradient-to-br from-rose-500 to-red-800 shadow-lg ">
+                  <tr>
+                    {TABLE_HEAD.map((head, index) => (
+                      <th
+                        key={head}
+                        className={`border-l-0 p-3 sm:p-4 pt-4 sm:pt-5 ${index === 0 ? "rounded-tl-xl" : ""} ${index === TABLE_HEAD.length - 1 ? "rounded-tr-xl" : ""
+                          }`}
                       >
-                        <Typography
-                          variant="small"
-                          className="text-yellow-50 drop-shadow-lg"
+                        <button
+                          onClick={() => handleSort(head.toLowerCase())}
+                          className="flex items-center justify-between w-full focus:outline-none"
                         >
-                          {head}
-                        </Typography>
-                        {/* <ChevronUpDownIcon className="h-5 w-5 text-gray-900 opacity-70 hover:opacity-100 transition-opacity" /> */}
-                      </button>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
+                          <Typography
+                            variant="small"
+                            className="text-yellow-50 drop-shadow-lg text-xs sm:text-sm"
+                          >
+                            {head}
+                          </Typography>
+                        </button>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
 
-              <tbody className="divide-y divide-gray-700">
-                {sortedRows.map(({ Titre, command, creation, fin, target, report_url, id, status }) => {
-                  // Classes dynamiques version sombre
-                  const rowColorClass = {
-                    waiting: 'bg-blue-900/20 hover:bg-blue-900/30 border-l-3 border-b-0 border-blue-400',
-                    running: 'bg-yellow-900/20 hover:bg-yellow-900/30 border-l-3 border-b-0 border-yellow-400',
-                    completed: 'bg-green-900/20 hover:bg-green-900/30 border-l-3 border-b-0 border-green-400',
-                    error: 'bg-red-900/20 hover:bg-red-900/30 border-l-3 border-b-0 border-red-400',
-                  }[status] || 'bg-gray-900/20 hover:bg-gray-900/30 border-l-3 border-b-0 border-gray-400';
+                <tbody className="divide-y divide-gray-700">
+                  {sortedRows.map(({ Titre, command, creation, fin, target, report_url, id, status }) => {
+                    const rowColorClass = {
+                      waiting: 'bg-blue-800/80 hover:bg-blue-800/60 border-l-3 border-b-0 border-blue-400',
+                      running: 'bg-yellow-800/80 hover:bg-yellow-800/60 border-l-3 border-b-0 border-yellow-400',
+                      completed: 'bg-green-800/80 hover:bg-green-800/60 border-l-3 border-b-0 border-green-400',
+                      error: 'bg-red-800/80 hover:bg-red-800/60 border-l-3 border-b-0 border-red-400',
+                    }[status] || 'bg-gray-800/80 hover:bg-gray-800/60 border-l-3 border-b-0 border-gray-400';
 
-                  // Icônes de statut version sombre
-                  const statusIcon = {
-                    waiting: <ClockIcon className="h-5 w-5 text-blue-400" />,
-                    running: <ArrowPathIcon className="h-5 w-5 text-yellow-400 " />,
-                    completed: <CheckCircleIcon className="h-5 w-5 text-green-400" />,
-                    error: <ExclamationTriangleIcon className="h-5 w-5 text-red-400" />,
-                  }[status];
+                    const statusIcon = {
+                      waiting: <ClockIcon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />,
+                      running: <ArrowPathIcon className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-400" />,
+                      completed: <CheckCircleIcon className="h-4 w-4 sm:h-5 sm:w-5 text-green-400" />,
+                      error: <ExclamationTriangleIcon className="h-4 w-4 sm:h-5 sm:w-5 text-red-400" />,
+                    }[status];
 
-                  return (
-                    <tr
-                      key={id}
-                      className={`${rowColorClass} cursor-pointer transition-all duration-200 hover:bg-opacity-40 group`}
-                      onClick={() => navigate(`/scan_no_user/${id}`)}
-                    >
-                      {/* Cellule Titre */}
-                      <td className="p-4">
-                        <div className="flex items-center space-x-3">
-                          <div className="flex-shrink-0">
-                            <div className="h-10 w-10 rounded-full bg-gray-700 shadow-md flex items-center justify-center">
-                              <DocumentTextIcon className="h-5 w-5 text-orange-400" />
+                    return (
+                      <tr
+                        key={id}
+                        className={`${rowColorClass} cursor-pointer transition-all duration-200 hover:bg-opacity-40 group`}
+                        onClick={() => navigate(`/scan_no_user/${id}`)}
+                      >
+                        <td className="p-2 sm:p-4">
+                          <div className="flex items-center space-x-2 sm:space-x-3">
+                            <div className="flex-shrink-0">
+                              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-gray-700 shadow-md flex items-center justify-center">
+                                <DocumentTextIcon className="h-4 w-4 sm:h-5 sm:w-5 text-orange-400" />
+                              </div>
+                            </div>
+                            <div>
+                              <Typography
+                                variant="small"
+                                className="font-bold text-white group-hover:text-orange-400 transition-colors text-xs sm:text-sm"
+                              >
+                                {Titre}
+                              </Typography>
+                              {report_url && (
+                                <a
+                                  href={report_url}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="text-xs text-blue-400 hover:text-blue-300 hover:underline flex items-center mt-1"
+                                >
+                                  <ArrowDownTrayIcon className="h-3 w-3 mr-1" />
+                                  Télécharger
+                                </a>
+                              )}
                             </div>
                           </div>
-                          <div>
-                            <Typography
-                              variant="small"
-                              className="font-bold text-white group-hover:text-orange-400 transition-colors"
-                            >
-                              {Titre}
+                        </td>
+
+                        <td className="p-2 sm:p-4">
+                          <div className="px-2 py-1 sm:px-3 sm:py-2 bg-gray-700 text-center font-bold rounded-md font-mono text-xs sm:text-sm text-gray-300 overflow-x-auto max-w-[120px] sm:max-w-xs">
+                            <code className="truncate">{command}</code>
+                          </div>
+                        </td>
+
+                        <td className="p-2 sm:p-4">
+                          <div className="flex items-center space-x-1 sm:space-x-2">
+                            <CalendarIcon className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
+                            <Typography variant="small" className="font-normal text-gray-300 text-xs sm:text-sm">
+                              {new Date(creation).toLocaleString()}
                             </Typography>
-                            {report_url && (
-                              <a
-                                href={report_url}
-                                onClick={(e) => e.stopPropagation()}
-                                className="text-xs text-blue-400 hover:text-blue-300 hover:underline flex items-center mt-1"
-                              >
-                                <ArrowDownTrayIcon className="h-3 w-3 mr-1" />
-                                Télécharger
-                              </a>
+                          </div>
+                        </td>
+
+                        <td className="p-2 sm:p-4">
+                          <div className="flex items-center space-x-1 sm:space-x-2">
+                            {fin ? (
+                              <>
+                                <CalendarIcon className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
+                                <Typography variant="small" className="font-normal text-gray-300 text-xs sm:text-sm">
+                                  {new Date(fin).toLocaleString()}
+                                </Typography>
+                              </>
+                            ) : (
+                              <Typography variant="small" className="font-normal text-gray-500 italic text-xs sm:text-sm">
+                                En cours...
+                              </Typography>
                             )}
                           </div>
-                        </div>
-                      </td>
+                        </td>
 
-                      {/* Cellule Commande */}
-                      <td className="p-4">
-                        <div className="px-3 py-2 bg-gray-700 text-center font-bold rounded-md font-mono text-sm text-gray-300 overflow-x-auto max-w-xs">
-                          <code className="truncate ">{command}</code>
-                        </div>
-                      </td>
-
-                      {/* Dates */}
-                      <td className="p-4">
-                        <div className="flex items-center space-x-2">
-                          <CalendarIcon className="h-4 w-4 text-gray-400" />
-                          <Typography variant="small" className="font-normal text-gray-300">
-                            {new Date(creation).toLocaleString()}
-                          </Typography>
-                        </div>
-                      </td>
-
-                      <td className="p-4">
-                        <div className="flex items-center space-x-2">
-                          {fin ? (
-                            <>
-                              <CalendarIcon className="h-4 w-4 text-gray-400" />
-                              <Typography variant="small" className="font-normal text-gray-300">
-                                {new Date(fin).toLocaleString()}
-                              </Typography>
-                            </>
-                          ) : (
-                            <Typography variant="small" className="font-normal text-gray-500 italic">
-                              En cours...
-                            </Typography>
-                          )}
-                        </div>
-                      </td>
-
-                      {/* Cible */}
-                      <td className="p-4">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-700 text-gray-200">
-                          <GlobeAltIcon className="h-3 w-3 mr-1 text-orange-400" />
-                          {target}
-                        </span>
-                      </td>
-
-                      {/* Statut */}
-                      <td className="p-4">
-                        <div className="flex items-center space-x-2">
-                          {statusIcon}
-                          <span className={`px-2 py-1 rounded-full text-xs font-bold ${status === 'waiting' ? 'bg-blue-900/50 text-blue-200' :
-                            status === 'running' ? 'bg-yellow-900/50 text-yellow-200' :
-                              status === 'completed' ? 'bg-green-900/50 text-green-200' :
-                                'bg-red-900/50 text-red-200'
-                            }`}>
-                            {status}
+                        <td className="p-2 sm:p-4">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-700 text-gray-200">
+                            <GlobeAltIcon className="h-3 w-3 mr-1 text-orange-400" />
+                            <span className="truncate max-w-[80px] sm:max-w-none">{target}</span>
                           </span>
-                        </div>
-                      </td>
+                        </td>
 
-                      {/* Actions */}
-                      <td className="p-4">
-                        <div className="flex space-x-2">
-                          <Tooltip content="Supprimer">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (window.confirm("Supprimer ce projet et toutes ses données ?")) {
-                                  deleteScan(id);
-                                }
-                              }}
-                              className="p-2 rounded-lg bg-gray-700 shadow hover:bg-red-900/50 transition-colors group/delete"
-                            >
-                              <TrashIcon className="h-5 w-5 text-red-400 group-hover/delete:text-white transition-colors" />
-                            </button>
-                          </Tooltip>
+                        <td className="p-2 sm:p-4">
+                          <div className="flex items-center space-x-1 sm:space-x-2">
+                            {statusIcon}
+                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${status === 'waiting' ? 'bg-blue-900/50 text-blue-200' :
+                              status === 'running' ? 'bg-yellow-900/50 text-yellow-200' :
+                                status === 'completed' ? 'bg-green-900/50 text-green-200' :
+                                  'bg-red-900/50 text-red-200'
+                              }`}>
+                              {status}
+                            </span>
+                          </div>
+                        </td>
 
-                          <Tooltip content="Voir les détails">
-                            <button
-                              onClick={() => navigate(`/scan_no_user/${id}`)}
-                              className="p-2 rounded-lg bg-gray-700 shadow hover:bg-blue-900/50 transition-colors group/details"
-                            >
-                              <EyeIcon className="h-5 w-5 text-blue-400 group-hover/details:text-white transition-colors" />
-                            </button>
-                          </Tooltip>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-            <div className="mt-4 text-right text-xs text-amber-400 italic">
+                        <td className="p-2 sm:p-4">
+                          <div className="flex space-x-1 sm:space-x-2 ">
+                            {/* <Tooltip content="Supprimer"> */}
+                              <Button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (window.confirm("Supprimer ce projet et toutes ses données ?")) {
+                                    deleteScan(id);
+                                  }
+                                }}
+                                // className="p-1 sm:p-2 rounded-lg bg-gray-700 shadow hover:bg-red-900/50 transition-colors "
+                                className="hover:bg-red-900/50 transition-colors"
+                                variant="primary"
+                              >
+                                <TrashIcon className="h-4 w-4 text-red-400 hover:text-white transition-colors" />
+                              </Button>
+                            {/* </Tooltip> */}
+
+                            {/* <Tooltip content="Voir les détails"> */}
+                              <Button
+                                onClick={() => navigate(`/scan_no_user/${id}`)}
+                                // className="p-1 sm:p-2 rounded-lg bg-gray-700 shadow hover:bg-blue-900/50 transition-colors"
+                                className="hover:bg-blue-900/50 transition-colors"
+                                variant="outline"
+                              >
+                                <EyeIcon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400 hover:text-white transition-colors" />
+                              </Button>
+                            {/* </Tooltip> */}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <div className="mt-4 text-right text-xs text-red-400 italic">
               {sortedRows.length} scans affichés
             </div>
           </div>

@@ -84,7 +84,7 @@ export default function Password() {
         }
     };
     if (!user) {
-        return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-yellow-900 to-slate-900 flex items-center justify-center">
+        return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-red-900 to-slate-900 flex items-center justify-center">
             <div className="relative">
                 <div className="w-20 h-20 border-4 border-yellow-200 border-t-yellow-600 rounded-full animate-spin"></div>
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
@@ -99,11 +99,11 @@ export default function Password() {
             <AppSidebar user={user} />
             <SidebarInset>
                 {/* Header simplifié et élégant */}
-                <header className="flex h-16 items-center px-6 border-b border-amber-200">
+                <header className="flex h-16 items-center px-6 border-b border-red-200">
                     <div className="flex items-center gap-3">
-                        <SidebarTrigger className="hover:text-amber-500 transition-colors" />
-                        <Separator orientation="vertical" className="h-6 bg-amber-200" />
-                        <h1 className="text-xl font-extrabold text-amber-400 italic">Mot de passe</h1>
+                        <SidebarTrigger  />
+                        <Separator orientation="vertical" className="h-6 bg-primary" />
+                        <h1 className="text-xl font-extrabold text-primary italic">Mot de passe</h1>
                     </div>
                 </header>
 
@@ -111,9 +111,9 @@ export default function Password() {
                 <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-6">
                     <div className="w-full max-w-md bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                         {/* En-tête de carte */}
-                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-6 border-b border-amber-100">
+                        <div className="bg-gradient-to-r from-red-50 to-orange-50 p-6 border-b border-red-100">
                             <div className="flex flex-col items-center">
-                                <KeyIcon className="h-10 w-10 text-amber-600 mb-3" />
+                                <KeyIcon className="h-10 w-10 text-red-600 mb-3" />
                                 <h2 className="text-2xl font-bold text-gray-800 text-center">Modifier le mot de passe</h2>
                                 <p className="text-gray-500 text-sm mt-1">Pour votre sécurité, choisissez un mot de passe robuste</p>
                             </div>
@@ -138,7 +138,7 @@ export default function Password() {
                             {/* Mot de passe actuel */}
                             <div className="space-y-2">
                                 <label className="block text-sm font-medium text-gray-700 flex items-center">
-                                    <LockClosedIcon className="h-4 w-4 text-amber-500 mr-2" />
+                                    <LockClosedIcon className="h-4 w-4 text-red-500 mr-2" />
                                     Mot de passe actuel
                                 </label>
                                 <div className="relative">
@@ -147,7 +147,7 @@ export default function Password() {
                                         name="currentPassword"
                                         value={formData.currentPassword}
                                         onChange={handleInputChange}
-                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-all"
+                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all"
                                         required
                                         placeholder="••••••••"
                                     />
@@ -157,7 +157,7 @@ export default function Password() {
                             {/* Nouveau mot de passe */}
                             <div className="space-y-2">
                                 <label className="block text-sm font-medium text-gray-700 flex items-center">
-                                    <LockOpenIcon className="h-4 w-4 text-amber-500 mr-2" />
+                                    <LockOpenIcon className="h-4 w-4 text-red-500 mr-2" />
                                     Nouveau mot de passe
                                 </label>
                                 <div className="relative">
@@ -166,7 +166,7 @@ export default function Password() {
                                         name="newPassword"
                                         value={formData.newPassword}
                                         onChange={handleInputChange}
-                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-all"
+                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all"
                                         required
                                         placeholder="Au moins 8 caractères"
                                     />
@@ -176,7 +176,7 @@ export default function Password() {
                             {/* Confirmation */}
                             <div className="space-y-2">
                                 <label className="block text-sm font-medium text-gray-700 flex items-center">
-                                    <ShieldCheckIcon className="h-4 w-4 text-amber-500 mr-2" />
+                                    <ShieldCheckIcon className="h-4 w-4 text-red-500 mr-2" />
                                     Confirmer le nouveau mot de passe
                                 </label>
                                 <div className="relative">
@@ -185,7 +185,7 @@ export default function Password() {
                                         name="newPasswordConfirm"
                                         value={formData.newPasswordConfirm}
                                         onChange={handleInputChange}
-                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-all"
+                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all"
                                         required
                                         placeholder="Retapez votre nouveau mot de passe"
                                     />
@@ -204,7 +204,7 @@ export default function Password() {
 
                                 <button
                                     type="submit"
-                                    className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2"
+                                    className="px-6 py-2.5 bg-gradient-to-r from-red-500 to-red-700 text-white font-medium rounded-lg hover:from-red-600 hover:to-orange-600 transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2"
                                 >
                                     Mettre à jour
                                 </button>

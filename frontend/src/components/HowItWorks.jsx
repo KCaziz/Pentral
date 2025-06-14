@@ -37,11 +37,11 @@ export const HowItWorks = () => {
   return (
     <section id="howItWorks" className="container text-center py-12 sm:py-16">
       <h2 className="text-3xl md:text-4xl font-bold ">
-        How It{" "}
+        Comment{" "}
         <span className="bg-gradient-to-b from-primary/60 to-primary text-transparent bg-clip-text">
-          Works{" "}
+          ça fonctionne{" "}
         </span>
-        Step-by-Step Guide
+        Guide étape par étape
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 py-10">

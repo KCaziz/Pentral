@@ -32,7 +32,7 @@ function Scan_user() {
   const [error, setError] = useState(null);
   const [chargement, setChargement] = useState(false);
   const [response, setResponse] = useState("");
-  
+
   const { scanId } = useParams();
   const navigate = useNavigate();
 
@@ -213,18 +213,18 @@ function Scan_user() {
       socket.once("streaming_ready", async () => {
         console.log("Streaming prêt, lancement de la requête API...");
 
-      const response = await fetch(`http://127.0.0.1:5000/api/scans/${scanId}/start_user`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ target }),
-      });
+        const response = await fetch(`http://127.0.0.1:5000/api/scans/${scanId}/start_user`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ target }),
+        });
 
-      const data = await response.json();
-      setOutput(data.output || data.error);
-      setLoading(false);
-    });
+        const data = await response.json();
+        setOutput(data.output || data.error);
+        setLoading(false);
+      });
     } catch (error) {
       setOutput("Erreur de connexion au serveur");
     }
@@ -259,7 +259,7 @@ function Scan_user() {
   }, []);
 
   if (!user || !scan) {
-    return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-yellow-900 to-slate-900 flex items-center justify-center">
+    return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-red-900 to-slate-900 flex items-center justify-center">
       <div className="relative">
         <div className="w-20 h-20 border-4 border-yellow-200 border-t-yellow-600 rounded-full animate-spin"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
@@ -273,189 +273,186 @@ function Scan_user() {
     <SidebarProvider>
       <AppSidebar user={user} />
       <SidebarInset>
-        <header className="flex h-16 items-center justify-between px-6 bg-black border-b border-amber-400/20">
+        <header className="flex h-16 items-center justify-between px-6 bg-background border-b border-red-400/20">
           <div className="flex items-center gap-3">
-            <SidebarTrigger className="text-white hover:text-amber-300 transition-colors" />
+            <SidebarTrigger />
 
             <div className="flex items-center gap-3">
               <a
                 onClick={() => navigate(`/project-dashboard/${scan_project}`)}
-                className="ml-0 inline-flex items-center justify-center p-2 rounded-full hover:bg-amber-400/10 transition-colors"
+                className="ml-0 inline-flex items-center justify-center p-2 rounded-full hover:bg-red-400/10 transition-colors"
                 title="Retour au projet"
               >
-                <ArrowBigLeft className="h-5 w-5 text-white" />
+                <ArrowBigLeft className="h-5 w-5 text-primary" />
               </a>
 
-              <Separator orientation="vertical" className="h-6 bg-white mr-6" />
+              <Separator orientation="vertical" className="h-6 bg-primary mr-6" />
 
-              <h2 className="text-xl font-bold text-amber-400 italic tracking-tight">
+              <h2 className="text-xl font-bold text-primary italic tracking-tight">
                 Scan Avec Utilisateur
               </h2>
 
             </div>
           </div>
         </header>
-        <div className="h-screen bg-gradient-to-b from-black to-yellow-300 flex flex-col items-center">
-          <div className="min-h-screen  flex items-center justify-center mb-0 pb-0">
-            <div className="bg-black mr-4 rounded-lg shadow-lg w-96 h-[300px] overflow-y-auto font-mono text-green-400 whitespace-pre-wrap border border-green-900">
-              <div className="flex items-center m-2" style={{
-                // height: "300px",
-                whiteSpace: 'pre-wrap'  // Ceci préserve les espaces et sauts de ligne
-              }}>
+
+        <div className="min-h-screen bg-gradient-to-b from-[hsl(var(--background))] to-[hsl(var(--primary)/0.1)] flex flex-col items-center justify-center px-4 py-8">
+          <div className="flex flex-col lg:flex-row items-center justify-center gap-6 w-full max-w-7xl">
+
+            <div className="bg-card rounded-lg shadow-lg w-full max-w-md h-[300px] overflow-auto font-mono text-green-400 whitespace-pre-wrap border border-border">
+              <div className="flex items-center m-2 border-b border-border">
                 <div className="h-3 w-3 bg-red-500 rounded-full mr-2"></div>
                 <div className="h-3 w-3 bg-yellow-500 rounded-full mr-2"></div>
                 <div className="h-3 w-3 bg-green-500 rounded-full mr-3"></div>
-                <span className=" text-green-500">LLM Response</span>
+                <span className=" text-foreground">LLM Response</span>
               </div>
-              {response || <span className="text-gray-500 text-sm ml-4">$ Waiting for response...</span>}
+              {response || <span className="text-muted-foreground text-sm ml-4">$ Waiting for response...</span>}
             </div>
-          <div className="bg-black bg-opacity-50 p-6 rounded-lg shadow-lg w-96 text-center">
-            <h2 className="text-white text-lg font-semibold mb-4 p-10">
-              Entrer une IP, CIDR ou un domaine
-            </h2>
-            <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
-              <input
-                type="text"
-                value={target}
-                onChange={(e) => setTarget(e.target.value)}
-                placeholder="192.168.x.x ou 192.168.x.x/24 ou example.com"
-                required
-                className="p-2 rounded border border-gray-300 bg-white text-black focus:outline-none focus:ring-2 focus:ring-yellow-300"
-              />
 
-              {!loading ? (
+            <div className="bg-card border border-border p-6 rounded-lg shadow-lg w-full max-w-md text-center">
+              <h2 className="text-lg font-semibold text-primary text-center mb-4 p-8">
+                Entrer une IP ou un domaine
+              </h2>
+              <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
+                <input
+                  type="text"
+                  value={target}
+                  onChange={(e) => setTarget(e.target.value)}
+                  placeholder="192.168.x.x ou example.com"
+                  required
+                  className="w-full p-2 rounded border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+
                 <button
                   type="submit"
-                  className="bg-yellow-500 text-black font-semibold py-2 rounded-lg hover:bg-yellow-600 transition duration-300"
+                  disabled={loading}
+                  className="w-full py-2 rounded bg-primary text-background font-semibold hover:bg-primary/80 transition"
                 >
-                  Exécuter
-                </button>) : (
-                <p
-                  className="bg-gray-500 text-white font-semibold py-2 rounded-lg "
-                >
-                  Exécuter
-                </p>
-              )
-              }
-            </form>
-            <div>
-              {isPaused ? (
-                <div className="mt-4 p-4 bg-yellow-100 rounded-lg">
-                  <h2 className="text-lg font-semibold text-yellow-800">
-                    Confirmation requise
-                  </h2>
-                  <div>
-                    {!showInput ? (
-                      <div className="justify-center space-x-4">
-                        <p className="text-yellow-700 mb-3">
-                          Voulez-vous exécuter cette commande {command[command.length - 1]} ?
-                        </p>
-                        <div className="items-center space-y-4 space-x-4">
-                          <button
-                            onClick={() => sendResponse("o")}
-                            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                          >
-                            Oui
-                          </button>
-                          <button
-                            onClick={() => sendResponse("n")}
-                            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                          >
-                            Non
-                          </button>
+                  {loading ? "Analyse en cours..." : "Exécuter"}
+                </button>
+              </form>
+              <div>
+                {isPaused ? (
+                  <div className="mt-4 p-4 bg-muted rounded-lg">
+                    <h3 className="text-lg font-semibold text-primary ">
+                      Personnalisation
+                    </h3>
+                    <div>
+                      {!showInput ? (
+                        <div className="justify-center space-x-4">
+                          <p className="text-yellow-700 mb-3">
+                            Voulez-vous exécuter cette commande {command[command.length - 1]} ?
+                          </p>
+                          <div className="items-center space-y-4 space-x-4">
+                            <button
+                              onClick={() => sendResponse("o")}
+                              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                            >
+                              Oui
+                            </button>
+                            <button
+                              onClick={() => sendResponse("n")}
+                              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                            >
+                              Non
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col space-y-2 w-full max-w-md">
-                        <><input
-                          type="text"
-                          value={customCommand}
-                          onChange={(e) => setCustomCommand(e.target.value)}
-                          className="border p-2 rounded"
-                          placeholder="Entrez votre commande alternative" /><div className="flex space-x-2">
-                            <button
-                              onClick={submitCustomCommand}
-                              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                            >
-                              Envoyer
-                            </button>
-                            <button
-                              onClick={() => {
-                                setShowInput(false);
-                                setIsPaused(false);
-                              }}
-                              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-                            >
-                              Annuler
-                            </button>
-                          </div></>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : null}
-            </div>
-            <div>
-              {loading && <Loading />}
-            </div>
-            {showReport && (
-              <div className="items-center justify-center">
-                {/* <iframe src={`http://127.0.0.1:5000/${scan.report_url}`} className="mt-3" width="100%" height="100%" title="Rapport PDF" /> */}
-                <a
-                  href={`http://127.0.0.1:5000/${scan.report_url}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300 mt-3"
-                >
-                  Consulter le rapport
-                </a>
-              </div>
-            )}
-            {output && !loading && (
-              <div className="mt-4 bg-black bg-opacity-70 p-4 rounded-lg max-h-96 overflow-y-auto">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-yellow-400 font-mono">Output:</h3>
-                  <button
-                    onClick={() => setOutput("")}
-                    className="text-gray-400 hover:text-white"
-                  >
-                    × Clear
-                  </button>
-                </div>
-                <pre className="text-green-400 font-mono text-sm whitespace-pre-wrap break-words">
-                  {typeof output === 'object' ? JSON.stringify(output, null, 2) : output}
-                </pre>
-              </div>
-            )}      </div>
-            <div className="bg-black p-4 ml-4 rounded-lg shadow-lg  w-80 font-mono text-green-400 overflow-auto" style={{ height: "300px" }}>
-            <div className="flex items-center mb-2">
-              <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
-              <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
-              <div className="w-3 h-3 bg-green-500 rounded-full mr-4"></div>
-              <span className="text-sm">Terminal</span>
-            </div>
-
-            <div className="border-t border-gray-700 pt-2">
-              {command_affichage.length > 0 ? (
-                <>
-                  <p className="text-white mb-2">$ Commandes exécutées:</p>
-                  {command_affichage.map((cmd, index) => (
-                    <div key={index} className="mb-1">
-                      <span className="text-blue-400">$</span> {cmd}
+                      ) : (
+                        <div className="flex flex-col space-y-2 w-full max-w-md">
+                          <><input
+                            type="text"
+                            value={customCommand}
+                            onChange={(e) => setCustomCommand(e.target.value)}
+                            className="border p-2 rounded"
+                            placeholder="Entrez votre commande alternative" /><div className="flex space-x-2">
+                              <button
+                                onClick={submitCustomCommand}
+                                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                              >
+                                Envoyer
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setShowInput(false);
+                                  setIsPaused(false);
+                                }}
+                                className="bg-muted-foreground text-background px-4 py-2 rounded hover:bg-muted"
+                              >
+                                Annuler
+                              </button>
+                            </div></>
+                        </div>
+                      )}
                     </div>
-                  ))}
-                </>
-              ) : (
-                <p className="text-gray-500">Aucune commande exécutée...</p>
+                  </div>
+                ) : null}
+              </div>
+              <div>
+                {loading && <Loading />}
+              </div>
+              {showReport && (
+                <div className="items-center justify-center">
+                  {/* <iframe src={`http://127.0.0.1:5000/${scan.report_url}`} className="mt-3" width="100%" height="100%" title="Rapport PDF" /> */}
+                  <a
+                    href={`http://127.0.0.1:5000/${scan.report_url}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block bg-rose-400 text-background  font-semibold py-2 px-4 rounded-lg hover:bg-rose-600  transition duration-300 mt-3"
+                  >
+                    Consulter le rapport
+                  </a>
+                </div>
+              )}
+              {output && !loading && (
+                <div className="mt-4 bg-background  p-4 rounded-lg max-h-96 overflow-y-auto">
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="text-primary font-mono">Output:</h3>
+                    <button
+                      onClick={() => setOutput("")}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      × Clear
+                    </button>
+                  </div>
+                  <pre className="text-green-400 font-mono text-sm whitespace-pre-wrap break-words">
+                    {typeof output === 'object' ? JSON.stringify(output, null, 2) : output}
+                  </pre>
+                </div>
               )}
             </div>
 
-            <div className="mt-2 flex items-center">
-              <span className="text-green-400 mr-2">$</span>
-              <span className="animate-pulse">_</span>
+
+            <div className="bg-card rounded-lg shadow-lg w-full max-w-sm font-mono text-green-400 border border-border h-[300px] overflow-auto">
+              <div className="flex items-center p-2 border-b border-border">
+                <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                <div className="w-3 h-3 bg-green-500 rounded-full mr-4"></div>
+                <span className="ml-3 text-sm text-foreground">Terminal</span>
+              </div>
+
+              <div className="px-4 pt-2">
+                {command_affichage.length > 0 ? (
+                  <>
+                    <p className="text-muted-foreground mb-2">$ Commandes exécutées:</p>
+                    {command_affichage.map((cmd, index) => (
+                      <div key={index} className="mb-1">
+                        <span className="text-green-400">$</span> {cmd}
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  <p className="text-muted-foreground">Aucune commande exécutée...</p>
+                )}
+
+
+                <div className="mt-2 flex items-center">
+                  <span className="text-green-400 mr-2">$</span>
+                  <span className="animate-pulse">_</span>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
         </div>
       </SidebarInset>
     </SidebarProvider>

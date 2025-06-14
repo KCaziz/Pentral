@@ -6,26 +6,27 @@ import { Link } from "react-router-dom";
 
 export const Hero = () => {
   return (
-    <section className="container grid lg:grid-cols-2 place-items-center pt-20 md:pt-32 gap-10">
+<section className="container grid lg:grid-cols-2 place-items-center pt-20 md:pt-32 gap-10 relative">
       <div className="text-center lg:text-start space-y-6">
         <main className="text-5xl md:text-6xl font-bold">
           <h1 className="inline">
-            <span className="inline bg-gradient-to-r from-[#F596D3]  to-[#D247BF] text-transparent bg-clip-text">
+            <span className="inline bg-gradient-to-r from-[#F596D3] to-[#D247BF] text-transparent bg-clip-text">
               Pentral
             </span>{" "}
-            Home page
+            Page d'accueil
           </h1>{" "}
-          for{" "}
+          pour{" "}
           <h2 className="inline">
-            <span className="inline bg-gradient-to-r from-[#61DAFB] via-[#1fc0f1] to-[#03a3d7] text-transparent bg-clip-text">
+            amateur de{" "}
+            <span className="inline bg-gradient-to-r from-pink-400 via-red-500 to-rose-800 text-transparent bg-clip-text">
               Pentest
             </span>{" "}
-            amateur
+
           </h2>
         </main>
 
         <p className="text-xl text-muted-foreground md:w-10/12 mx-auto lg:mx-0">
-          Use our tool for free and start your pentesting journey.
+          Utiliser notre outil gratuitement et commencez votre aventure de pentesting.
         </p>
 
         <div className="space-y-4 md:space-y-0 md:space-x-4">
@@ -36,19 +37,17 @@ export const Hero = () => {
               variant: "outline",
             })}`}
           >
-            Get started
+            Commencer ici
             <RocketIcon />
           </Link>
         </div>
       </div>
 
-      {/* Hero cards sections */}
-      <div className="z-10">
-        <HeroCards />
+      <div className="hidden lg:block"> 
+          <HeroCards />
       </div>
 
-      {/* Shadow effect */}
-      <div className="shadow"></div>
+
     </section>
   );
 };

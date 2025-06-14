@@ -224,8 +224,8 @@ function Scan() {
     };
   }, []);
 
-    if (!user || !scan) {
-    return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-yellow-900 to-slate-900 flex items-center justify-center">
+  if (!user) {
+    return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-red-900 to-slate-900 flex items-center justify-center">
       <div className="relative">
         <div className="w-20 h-20 border-4 border-yellow-200 border-t-yellow-600 rounded-full animate-spin"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
@@ -239,186 +239,162 @@ function Scan() {
     <SidebarProvider>
       <AppSidebar user={user} />
       <SidebarInset>
-        <header className="flex h-16 items-center justify-between px-6 bg-black border-b border-amber-400/20">
-          <div className="flex items-center gap-3">
-            <SidebarTrigger className="text-white hover:text-amber-300 transition-colors" />
-
-            <div className="flex items-center gap-3">
-              <a
-                onClick={() => navigate(`/project-dashboard/${scan_project}`)}
-                className="ml-0 inline-flex items-center justify-center p-2 rounded-full hover:bg-amber-400/10 transition-colors"
-                title="Retour au projet"
-              >
-                <ArrowBigLeft className="h-5 w-5 text-white" />
-              </a>
-
-              <Separator orientation="vertical" className="h-6 bg-white mr-6" />
-
-              <h2 className="text-xl font-bold text-amber-400 italic tracking-tight">
-                Scan Rapide
-              </h2>
-
-            </div>
+        <header className="flex h-16 items-center justify-between px-6 bg-background border-b border-border">
+          <div className="flex items-center gap-4">
+            <SidebarTrigger />
+            <a
+              onClick={() => navigate(`/project-dashboard/${scan_project}`)}
+              className="p-2 rounded-full hover:bg-primary/10 transition-colors"
+              title="Retour au projet"
+            >
+              <ArrowBigLeft className="h-5 w-5 text-primary" />
+            </a>
+            <Separator orientation="vertical" className="h-6 bg-primary/40 mr-4" />
+            <h2 className="text-xl font-bold text-primary italic tracking-tight">Scan Rapide</h2>
           </div>
         </header>
 
-        <div className="h-screen bg-gradient-to-b from-black to-yellow-300 flex flex-col items-center">
-          <div className="min-h-screen  flex items-center justify-center mb-0 pb-0">
-            <div className="bg-black mr-4 rounded-lg shadow-lg w-96 h-[300px] overflow-y-auto font-mono text-green-400 whitespace-pre-wrap border border-green-900">
-              <div className="flex items-center m-2" style={{
-                // height: "300px",
-                whiteSpace: 'pre-wrap'  // Ceci préserve les espaces et sauts de ligne
-              }}>
-                <div className="h-3 w-3 bg-red-500 rounded-full mr-2"></div>
-                <div className="h-3 w-3 bg-yellow-500 rounded-full mr-2"></div>
-                <div className="h-3 w-3 bg-green-500 rounded-full mr-3"></div>
-                <span className=" text-green-500">LLM Response</span>
+        <div className="min-h-screen bg-gradient-to-b from-[hsl(var(--background))] to-[hsl(var(--primary)/0.1)] flex flex-col items-center justify-center px-4 py-8">
+          <div className="flex flex-col lg:flex-row items-center justify-center gap-6 w-full max-w-7xl">
+
+            <div className="bg-card rounded-lg shadow-lg w-full max-w-md h-[300px] overflow-auto font-mono text-green-400 whitespace-pre-wrap border border-border">
+              <div className="flex items-center m-2 border-b border-border">
+                <div className="w-3 h-3 rounded-full bg-red-500" />
+                <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                <div className="w-3 h-3 rounded-full bg-green-500" />
+                <span className="ml-3 text-sm text-foreground">LLM Response</span>
               </div>
-              {response || <span className="text-gray-500 text-sm ml-4">$ Waiting for response...</span>}
+              <div className="p-4 whitespace-pre-wrap">
+                {response || <span className="text-muted-foreground text-sm">$ Waiting for response...</span>}
+              </div>
             </div>
-            <div className="bg-black bg-opacity-50 p-6 rounded-lg shadow-lg w-96 text-center">
-              <h2 className="text-white text-lg font-semibold mb-4 p-10">
-                Entrer une IP, CIDR ou un domaine
-              </h2>
-              <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
+
+            {/* Formulaire Scan */}
+            <div className="bg-card border border-border p-6 rounded-lg shadow-lg w-full max-w-md text-center">
+              <h2 className="text-lg font-semibold text-primary text-center mb-4 p-8">Entrer une IP ou un domaine</h2>
+              <form onSubmit={handleSubmit} className=" flex flex-col space-y-4">
                 <input
                   type="text"
                   value={target}
                   onChange={(e) => setTarget(e.target.value)}
-                  placeholder="192.168.x.x ou 192.168.x.x/24 ou example.com"
+                  placeholder="192.168.x.x ou example.com"
                   required
-                  className="p-2 rounded border border-gray-300 bg-white text-black focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                  className="w-full p-2 rounded border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 />
-
-                {!loading ? (
-                  <button
-                    type="submit"
-                    className="bg-yellow-500 text-black font-semibold py-2 rounded-lg hover:bg-yellow-600 transition duration-300"
-                  >
-                    Exécuter
-                  </button>) : (
-                  <p
-                    className="bg-gray-500 text-white font-semibold py-2 rounded-lg "
-                  >
-                    Exécuter
-                  </p>
-                )
-                }
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-2 rounded bg-primary text-background font-semibold hover:bg-primary/80 transition"
+                >
+                  {loading ? "Analyse en cours..." : "Exécuter"}
+                </button>
               </form>
-              <div>
-                {isPaused ? (
-                  <div className="mt-4 p-4 bg-yellow-100 rounded-lg">
-                    <h2 className="text-lg font-semibold text-yellow-800">
-                      Personnalisation
-                    </h2>
-                    <div>
-                      {!showInput ? (
-                        <div className="justify-center space-x-4">
-                          <p className="text-yellow-700 mb-3">
-                            Voulez-vous exécuter cette commande {command[command.length - 1]} ?
-                          </p>
-                          <div className="items-center space-y-4 space-x-4">
-                            <button
-                              onClick={() => sendResponse("o")}
-                              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                            >
-                              Oui
-                            </button>
-                            <button
-                              onClick={() => sendResponse("n")}
-                              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                            >
-                              Non
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col space-y-2 w-full max-w-md">
-                          <><input
-                            type="text"
-                            value={customCommand}
-                            onChange={(e) => setCustomCommand(e.target.value)}
-                            className="border p-2 rounded"
-                            placeholder="Entrez votre commande alternative" /><div className="flex space-x-2">
-                              <button
-                                onClick={submitCustomCommand}
-                                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                              >
-                                Envoyer
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setShowInput(false);
-                                  setIsvalidating(false);
-                                  setCustomCommand('');
-                                  setUser_response('');
-                                  setIsPaused(true);
-                                }}
-                                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-                              >
-                                Annuler
-                              </button>
-                            </div></>
 
-                        </div>
-                      )}
+              {isPaused && (
+                <div className="bg-muted p-4 rounded-lg space-y-4">
+                  <h3 className="text-primary font-semibold">Personnalisation</h3>
+                  {!showInput ? (
+                    <>
+                      <p className="text-muted-foreground">
+                        Voulez-vous exécuter cette commande <strong>{command.at(-1)}</strong> ?
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => sendResponse("o")}
+                          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                        >
+                          Oui
+                        </button>
+                        <button
+                          onClick={() => sendResponse("n")}
+                          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                        >
+                          Non
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="space-y-2">
+                      <input
+                        type="text"
+                        value={customCommand}
+                        onChange={(e) => setCustomCommand(e.target.value)}
+                        className="w-full p-2 rounded border border-border bg-background text-foreground"
+                        placeholder="Entrez votre commande alternative"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={submitCustomCommand}
+                          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                        >
+                          Envoyer
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowInput(false);
+                            setIsvalidating(false);
+                            setCustomCommand('');
+                            setUser_response('');
+                            setIsPaused(true);
+                          }}
+                          className="bg-muted-foreground text-background px-4 py-2 rounded hover:bg-muted"
+                        >
+                          Annuler
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ) : null}
-              </div>
-              <div>
-                {loading && <Loading />}
-              </div>
+                  )}
+                </div>
+              )}
+
+              {loading && <Loading />}
               {output && !loading && (
-                <div className="mt-4 bg-black bg-opacity-70 p-4 rounded-lg max-h-96 overflow-y-auto">
+                <div className="bg-background border border-border mt-4 p-4 rounded-lg max-h-72 overflow-y-auto font-mono text-sm text-green-400">
                   <div className="flex justify-between items-center mb-2">
-                    <h3 className="text-yellow-400 font-mono">Output:</h3>
+                    <h3 className="text-primary font-semibold">Output:</h3>
                     <button
                       onClick={() => setOutput("")}
-                      className="text-gray-400 hover:text-white"
+                      className="text-muted-foreground hover:text-foreground"
                     >
                       × Clear
                     </button>
                   </div>
-                  <pre className="text-green-400 font-mono text-sm whitespace-pre-wrap break-words">
-                    {typeof output === 'object' ? JSON.stringify(output, null, 2) : output}
-                  </pre>
+                  <pre>{typeof output === 'object' ? JSON.stringify(output, null, 2) : output}</pre>
                 </div>
               )}
             </div>
-            <div className="bg-black p-4 ml-4 rounded-lg shadow-lg  w-80 font-mono text-green-400 overflow-auto" style={{ height: "300px" }}>
-              <div className="flex items-center mb-2">
-                <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
-                <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
-                <div className="w-3 h-3 bg-green-500 rounded-full mr-4"></div>
-                <span className="text-sm">Terminal</span>
-              </div>
 
-              <div className="border-t border-gray-700 pt-2">
+            <div className="bg-card rounded-lg shadow-lg w-full max-w-sm font-mono text-green-400 border border-border h-[300px] overflow-auto">
+              <div className="flex items-center p-2 border-b border-border">
+                <div className="w-3 h-3 bg-red-500 rounded-full" />
+                <div className="w-3 h-3 bg-yellow-500 rounded-full" />
+                <div className="w-3 h-3 bg-green-500 rounded-full" />
+                <span className="ml-3 text-sm text-foreground">Terminal</span>
+              </div>
+              <div className="px-4 pt-2">
                 {command.length > 0 ? (
                   <>
-                    <p className="text-white mb-2">$ Commandes exécutées:</p>
+                    <p className="text-muted-foreground mb-2">$ Commandes exécutées:</p>
                     {command.map((cmd, index) => (
                       <div key={index} className="mb-1">
-                        <span className="text-blue-400">$</span> {cmd}
+                        <span className="text-green-400">$</span> {cmd}
                       </div>
                     ))}
                   </>
                 ) : (
-                  <p className="text-gray-500">Aucune commande exécutée...</p>
+                  <p className="text-muted-foreground">Aucune commande exécutée...</p>
                 )}
-              </div>
 
-              <div className="mt-2 flex items-center">
-                <span className="text-green-400 mr-2">$</span>
-                <span className="animate-pulse">_</span>
+                <div className="mt-2 flex items-center">
+                  <span className="text-green-400 mr-2">$</span>
+                  <span className="animate-pulse">_</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
-
   );
 }
 

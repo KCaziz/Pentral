@@ -67,7 +67,6 @@
   }
 } */
 
-/* *=========== Green theme =========== */
 @layer base {
   :root {
     
@@ -77,10 +76,13 @@
     --card-foreground: 0 0% 0%;
     --popover: 0 0% 98%;
     --popover-foreground: 0 0% 0%;
-    --primary: 45 100% 50%;    /* Jaune vif (seul élément coloré) */
+    --primary: 0, 70%, 50%; /* Rouge principal */
     --primary-foreground: 0 0% 0%; /* Texte noir sur jaune */
-    --secondary: 0 0% 96%;     /* Gris très clair */
+    --primary-soft: 340 90% 70%; /* Rose */
+    --primary-warm: 25 90% 55%; /* Orange chaud */
+    --secondary: 0, 55%, 45%;     /* Gris très clair */
     --secondary-foreground: 0 0% 20%;
+    --thirdary: 0, 95%, 65%; 
     --muted: 0 0% 94%;
     --muted-foreground: 0 0% 45%;
     --accent: 0 0% 90%;       /* Gris neutre */
@@ -89,7 +91,7 @@
     --destructive-foreground: 0 0% 100%;
     --border: 0 0% 88%;       /* Bordure grise */
     --input: 0 0% 88%;
-    --ring: 45 100% 50%;      /* Contour jaune pour le focus */
+    --ring: 0, 70%, 50%;      /* Contour rouge pour le focus */
     --radius: 0.5rem;
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -109,10 +111,13 @@
     --card-foreground: 0 0% 95%;
     --popover: 0 0% 10%;
     --popover-foreground: 0 0% 95%;
-    --primary: 45 100% 50%;    /* Jaune comme unique touche colorée */
+    --primary: 0, 70%, 50%; /* Rouge principal */
     --primary-foreground: 0 0% 0%;
-    --secondary: 0 0% 15%;     /* Gris anthracite */
+    --primary-soft: 340 90% 70%; /* Rose */
+    --primary-warm: 25 90% 55%; /* Orange chaud */
+    --secondary: 0, 55%, 45%;     /* Gris anthracite */
     --secondary-foreground: 0 0% 95%;
+    --thirdary: 0, 95%, 65%; /* Gris neutre */
     --muted: 0 0% 20%;
     --muted-foreground: 0 0% 65%;
     --accent: 0 0% 25%;       /* Gris foncé */
@@ -121,7 +126,7 @@
     --destructive-foreground: 0 0% 100%;
     --border: 0 0% 18%;       /* Bordure gris très foncé */
     --input: 0 0% 18%;
-    --ring: 45 100% 50%;      /* Contour jaune */      
+    --ring: 0, 70%, 50%;
     --sidebar-background: 240 5.9% 10%;      
     --sidebar-foreground: 240 4.8% 95.9%;      
     --sidebar-primary: 224.3 76.3% 48%;      
@@ -135,8 +140,7 @@
 .dark input,
 .dark textarea,
 .dark select {
-  color: #e2e8f0; /* Couleur de texte claire mais pas purement blanc */
-  background-color: #1e293b; /* Fond plus foncé */
+  background-color: #242425; 
   border-color: #334155;
 }
 

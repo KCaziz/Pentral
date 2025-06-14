@@ -19,24 +19,22 @@ export const About = () => {
             <div className="pb-6">
               <h2 className="text-3xl md:text-4xl font-bold">
                 <span className="bg-gradient-to-b from-primary/60 to-primary text-transparent bg-clip-text">
-                  About{" "}
+                  A propos{" "}
                 </span>
-                Company
+                de Keystone
               </h2>
               <p className="text-2xl text-muted-foreground mt-4">
-              Major player in cybersecurity in MENA region, with valuable expertise in setting-up cyber defense programs covering strategic, tactical and operational levels.
-Keystone intervenes in the preventive, proactive and response aspects by offering a complete service list for multiple industries. Our expertise and our long experience is ensured by our internationally renowned experts.
-keystone Team brings together cybersecurity specialists to support business in their digital development and digital transformation.
+                Acteur majeur de la cybersécurité dans la région MENA, avec une expertise précieuse dans la mise en place de programmes de cyberdéfense couvrant les niveaux stratégique, tactique et opérationnel.
+                Keystone intervient sur les aspects préventif, proactif et de réponse en proposant une liste complète de services pour plusieurs industries. Notre expertise et notre longue expérience sont assurées par nos experts de renommée internationale.
+                keystone Team rassemble des spécialistes de la cybersécurité pour accompagner les entreprises dans leur développement digital et leur transformation digitale.
 
-Keystone is committed to reversing this trend by helping its customers understand the threats to their information systems and how to respond to them and protect them.
+                Keystone s’engage à inverser cette tendance en aidant ses clients à comprendre les menaces sur leurs systèmes d’information et comment y répondre et les protéger.
               </p>
-              <a href="https://www.keystone-corporation.com/" > 
-              <p className="pt-3"> Visit our website : www.keystone-corporation.com</p>
-              
+              <a href="https://www.keystone-corporation.com/" >
+                <p className="pt-3"> Visite notre site web : www.keystone-corporation.com</p>
+
               </a>
             </div>
-
-            {/* <Statistics /> */}
           </div>
         </div>
       </div>

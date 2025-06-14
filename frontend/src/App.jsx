@@ -48,8 +48,6 @@ const App = () => {
       <Route path="/admin/stats" element={<AdminStatsDashboard/>} />
 
 
-
-
       <Route path="*" element={<Navigate to="/" replace />} />
 
     </Routes>

@@ -28,7 +28,7 @@ export const Cta = () => {
     to="/scan"
     className="bg-primary text-primary-foreground px-6 py-3 rounded-md font-medium text-center transition hover:bg-primary/90 shadow-sm"
   >
-    Get started
+    Lancer un scan
   </Link>
   
   <a

@@ -591,10 +591,7 @@ def start_scan(scan_id):
     target = data.get("target")
     scan = get_scan_data(scan_id) 
     if not scan:
-        return jsonify({"error": "Scan introuvable"}), 404
-
-    print("Scan trouvé :", scan)
-    
+        return jsonify({"error": "Scan introuvable"}), 404    
     iteration = scan.get("iterations")
     project_title, project_name = get_project_from_scan(scan_id)
     if not project_title:

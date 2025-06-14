@@ -91,19 +91,22 @@ export const Navbar = () => {
                       {label}
                     </a>
                   ))}
-
+                  <div className=" " >
                   <Link
                     to="/login"
-                    className={buttonVariants({ variant: "ghost", className: "text-lg" })}
+                    className={buttonVariants({ variant: "secondary", className: "text-lg w-[110px]" })}
                   >
                     Connexion
                   </Link>
+                  </div>
+                  <div className=" " >
                   <Link
-                    to="/"
-                    className={buttonVariants({ variant: "default", className: "text-lg" })}
+                    to="/signup"
+                    className={buttonVariants({ variant: "secondary", className: "text-lg w-[110px]" })}
                   >
                     Inscription
                   </Link>
+                  </div>
                   <a
                     rel="noreferrer noopener"
                     href="https://github.com/KCaziz/Pentral"
@@ -112,7 +115,7 @@ export const Navbar = () => {
                       variant: "secondary"
                     })}`}
                   >
-                    <GitHubLogoIcon className="mr-2 w-5 h-5" />
+                    {/* <GitHubLogoIcon className="mr-2 w-5 h-5" /> */}
                     Github
                   </a>
                 </nav>
@@ -145,7 +148,7 @@ export const Navbar = () => {
             </Link>
             <Link
               to="/signup"
-              className={buttonVariants({ variant: "default", className: "text-lg" })}
+              className={buttonVariants({ variant: "ghost", className: "text-lg text-background bg-primary" })}
             >
               Inscription
             </Link>
@@ -154,7 +157,7 @@ export const Navbar = () => {
               rel="noreferrer noopener"
               href="https://github.com/KCaziz/Pentral"
               target="_blank"
-              className={`border ${buttonVariants({ variant: "secondary" })}`}
+              className={`border ${buttonVariants({ variant: "primary" })} `}
             >
               <GitHubLogoIcon className="mr-2 w-5 h-5" />
               Github

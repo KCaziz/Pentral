@@ -1,0 +1,10 @@
+# Nmap 7.95 scan initiated Mon Jun  9 12:12:34 2025 as: /usr/lib/nmap/nmap -sV -p 80,443 -O -sC --script http-vhosts,http-robots,http-methods,http-open-redirect,http-title,http-favicon,http-header-dump,dns-brute,dns-enum-bursts -oN nmap-output 197.112.125.117
+NSE: failed to initialize the script engine:
+/usr/share/nmap/nse_main.lua:829: 'http-robots' did not match a category, filename, or directory
+stack traceback:
+	[C]: in function 'error'
+	/usr/share/nmap/nse_main.lua:829: in local 'get_chosen_scripts'
+	/usr/share/nmap/nse_main.lua:1364: in main chunk
+	[C]: in ?
+
+QUITTING!

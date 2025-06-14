@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useParams } from "react-router-dom"
 import { AppSidebar } from "@/components/app-sidebar"
-import { Activity } from "lucide-react"
+import { Activity, ChevronDown } from "lucide-react"
 import { InformationCircleIcon, PlusIcon } from "@heroicons/react/24/outline";
 
 import { Separator } from "@/components/ui/separator"
@@ -26,9 +26,8 @@ function ProjectDashboard() {
   const { projectId } = useParams();
   const [type, setType] = useState("no_user");
   const [iterations, setIterations] = useState(3);
+  const [showHelp, setShowHelp] = useState(false);
   const user_id = localStorage.getItem('user_id');
-
-
 
   useEffect(() => {
     const userId = localStorage.getItem('user_id');
@@ -156,7 +155,7 @@ function ProjectDashboard() {
   }
 
   if (!user || !project) {
-    return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-yellow-900 to-slate-900 flex items-center justify-center">
+    return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-red-900 to-slate-900 flex items-center justify-center">
       <div className="relative">
         <div className="w-20 h-20 border-4 border-yellow-200 border-t-yellow-600 rounded-full animate-spin"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
@@ -175,22 +174,17 @@ function ProjectDashboard() {
           <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
             <div className="flex items-center gap-2 w-full">
               <SidebarTrigger />
-              <Separator orientation="vertical" className="h-4" />
-              <h2 className="text-xl font-extrabold text-amber-400 italic w-full">Suivi Projet</h2>
+              <Separator orientation="vertical" className="h-4 bg-primary" />
+              <h2 className="text-xl font-extrabold text-primary italic w-full">Suivi Projet</h2>
             </div>
-            <img src={cloudSvg} alt="cloud" className="ml-[0rem] mt-[5rem] size-32 hidden md:block" />
-            <img src={cloudSvg} alt="cloud" className="ml-[10rem]  mt-[70rem] size-32 hidden md:block" />
-            {/* <img src={cloudSvg} alt="cloud" className="ml-[10rem]  mt-[40rem] size-32 hidden md:block" /> */}
-            <img src={cloudSvg} alt="cloud" className="ml-[20em] mt-[20rem] size-32 hidden md:block" />
-
 
           </header>
-          <div className="p-6 w-full max-w-4xl mx-auto my-10 bg-gradient-to-br from-amber-50 to-amber-400  border border-amber-200 rounded-2xl shadow-sm space-y-10">
+          <div className="p-6 w-full max-w-4xl mx-auto my-10 bg-gradient-to-br from-red-50 to-red-400  border border-red-200 rounded-2xl shadow-sm space-y-10">
 
             {/* Titre projet */}
             <div className="">
               <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                Nom du projet : <span className="text-amber-600">{project.name || "Sans nom"}</span>
+                Nom du projet : <span className="text-red-600">{project.name || "Sans nom"}</span>
               </h2>
               <p className="text-sm text-gray-500">Résumé des scans et options de gestion.</p>
             </div>
@@ -198,11 +192,45 @@ function ProjectDashboard() {
             {/* Scans */}
             <div className="">
               <h3 className="text-lg font-semibold text-slate-700 mb-3">📂 Scans liés</h3>
+              <div className="text-sm text-gray-600 mb-4">
+  <button
+    onClick={() => setShowHelp(!showHelp)}
+    className="flex items-center gap-2 text-red-600 hover:text-red-800 font-bold transition"
+  >
+    <ChevronDown className="w-4 h-4" />
+    {showHelp ? "Masquer les explications" : "Comprendre les types de scans et les iterations"}
+  </button>
+
+  {showHelp && (
+    <div className="mt-3 bg-white/60 backdrop-blur-md border border-red-200 rounded-xl p-5 shadow-sm space-y-4">
+<div className="grid md:grid-cols-2 gap-4">
+    <div className="bg-red-50 border border-red-100 rounded-lg p-4 space-y-2">
+      <p className="font-medium text-red-600">🔄 Scan sans utilisateur (automatique)</p>
+      <p>Le système enchaîne les commandes sans interruption. Idéal pour des tests rapides, mais risque d'exécuter des actions non souhaitées si les premières commandes manquent de contexte.</p>
+      <p className="text-xs text-gray-500 italic">Ex: 3 itérations peuvent rater une faille profonde, 8 itérations peuvent générer des doublons ou perdre le fil logique.</p>
+    </div>
+    <div className="bg-red-100 border border-red-200 rounded-lg p-4 space-y-2">
+      <p className="font-medium text-red-700">👤 Scan avec utilisateur (semi-automatique)</p>
+      <p>Vous validez chaque commande. Cela permet d’ajuster la stratégie à chaque étape et d’éviter les commandes inutiles ou dangereuses.</p>
+      <p className="text-xs text-gray-500 italic">Ex: Une commande détecte un port ouvert inhabituel → vous pouvez orienter manuellement la suite vers un vecteur plus précis.</p>
+    </div>
+  </div>
+  <div className="bg-white/70 border border-dashed border-red-200 rounded-md p-3">
+    <p className="font-medium text-gray-800">💡 Exemple :</p>
+    <p className="text-gray-600">
+      Pour une cible exposée sur internet, un scan automatique avec <strong>5 itérations</strong> pourrait tester 5 ports classiques. Mais avec validation manuelle, après avoir détecté un port <code>5985</code> ouvert, vous pourriez décider d’explorer <strong>WinRM</strong> ou d’injecter une commande PowerShell personnalisée.
+    </p>
+  </div>
+    </div>
+  )}
+</div>
+
+
               <ul className="space-y-4">
                 {allScans.map((scan) => (
                   <li
                     key={scan._id}
-                    className="p-4 border-l-4 bg-amber-50 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition"
+                    className="p-4 border-l-4 bg-red-50 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition"
                     style={{
                       borderColor: {
                         completed: "#22c55e",
@@ -221,7 +249,7 @@ function ProjectDashboard() {
                   >
                     <div className="font-bold text-slate-800">{scan.name || "Scan sans nom"}</div>
                     <div className="text-sm text-slate-600">Type : {scan.type || "n/a"}</div>
-                    <div className="text-sm text-slate-600">Iterations : {scan.iterations || "n/aaaa"}</div>
+                    <div className="text-sm text-slate-600">Iterations : {scan.iterations || "3"}</div>
 
                     <div className="text-sm text-slate-600">Statut : <span className="font-semibold">{scan.status}</span></div>
                     <div className="text-xs text-gray-500">Créé le {new Date(scan.created_at).toLocaleDateString()}</div>
@@ -236,7 +264,7 @@ function ProjectDashboard() {
               </ul>
 
               {/* Ajouter un scan */}
-              <form onSubmit={handleAddScan} className="mt-6 bg-yellow-100 p-4 rounded-lg border border-yellow-200 shadow-sm flex flex-col sm:flex-row gap-3 items-end">
+              <form onSubmit={handleAddScan} className="mt-6 bg-red-100 p-4 rounded-lg border border-red-200 shadow-sm flex flex-col sm:flex-row sm:text-center gap-3 ">
                 <div className="flex-1 ">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Nom du scan</label>
                   <input
@@ -244,7 +272,7 @@ function ProjectDashboard() {
                     placeholder="Ex: Scan initial"
                     value={newScanName}
                     onChange={(e) => setNewScanName(e.target.value)}
-                    className="w-full px-3 py-2 rounded border border-gray-300 focus:ring-amber-400 focus:border-amber-400 focus:outline-none"
+                    className="lg:w-full md:w-full sm:w-full w-1/2 px-3 py-2 bg-white rounded border border-gray-300 focus:ring-red-400 focus:border-red-400 focus:outline-none"
                     required
                   />
                 </div>
@@ -253,8 +281,8 @@ function ProjectDashboard() {
                   <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
                     Type de scan
                     <div className="group relative ml-1 inline-flex">
-                      <InformationCircleIcon className="h-4 w-4 text-amber-500 cursor-help" />
-                      <div className="absolute z-10 hidden group-hover:block w-64 p-2 -left-32 -top-32 bg-gray-300 border border-amber-200 rounded-lg shadow-lg text-xs text-gray-600">
+                      <InformationCircleIcon className="h-4 w-4 text-red-500 cursor-help" />
+                      <div className="absolute z-10 hidden group-hover:block w-64 p-2 -left-32 -top-32 bg-gray-300 border border-red-200 rounded-lg shadow-lg text-xs text-gray-600">
                         <strong>Sans utilisateur:</strong> Exécution automatique complète<br />
                         <strong>Avec utilisateur:</strong> Confirmation requise pour chaque commande avec possibilité de personnalisation
                       </div>
@@ -264,7 +292,7 @@ function ProjectDashboard() {
                     name="type"
                     value={type}
                     onChange={(e) => setType(e.target.value)}
-                    className="px-3 py-2 rounded border border-gray-300 focus:ring-amber-400 focus:border-amber-400 focus:outline-none"
+                    className="px-3 py-2 bg-white  rounded border border-gray-300 focus:ring-red-400 focus:border-red-400 focus:outline-none"
                   >
                     <option value="no_user">Sans utilisateur</option>
                     <option value="user">Avec utilisateur</option>
@@ -275,8 +303,8 @@ function ProjectDashboard() {
                   <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
                     Itérations
                     <div className="group relative ml-1 inline-flex">
-                      <InformationCircleIcon className="h-4 w-4 text-amber-500 cursor-help" />
-                      <div className="absolute z-10 hidden group-hover:block w-64 p-2 -left-32 -top-32 bg-gray-300 border border-amber-200 rounded-lg shadow-lg text-xs text-gray-600">
+                      <InformationCircleIcon className="h-4 w-4 text-red-500 cursor-help" />
+                      <div className="absolute z-10 hidden group-hover:block w-64 p-2 -left-32 -top-32 bg-gray-300 border border-red-200 rounded-lg shadow-lg text-xs text-gray-600">
                         <strong>Nombre de commandes:</strong> de pentest que Pentral exécutera. Valeur recommandée entre 3 et 5 pour un bon équilibre entre couverture et performance.<br />
                         <span className="text-xs text-gray-500"> "Pas plus de 10 itérations pour éviter les pertes de contextes."</span>
                       </div>
@@ -285,7 +313,7 @@ function ProjectDashboard() {
                   <select
                     value={iterations}
                     onChange={(e) => setIterations(parseInt(e.target.value))}
-                    className="px-3 pr-5 py-2  rounded border border-gray-300 focus:ring-amber-400 focus:border-amber-400 focus:outline-none"
+                    className="px-3 pr-5 py-2 bg-white rounded border border-gray-300 focus:ring-red-400 focus:border-red-400 focus:outline-none"
                   >
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
                       <option key={num} value={num}>{num}</option>
@@ -296,7 +324,7 @@ function ProjectDashboard() {
                 <div className="mt-4 flex justify-end">
                   <button
                     type="submit"
-                    className="group relative inline-flex bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:from-amber-600 hover:to-orange-600 transition-all transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 items-center"
+                    className="group relative inline-flex bg-gradient-to-r from-red-500 to-red-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:from-red-600 hover:to-orange-600 transition-all transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 items-center"
                   >
                     <PlusIcon className="h-4 w-4 mr-2 transition-transform group-hover:rotate-90" />
                     <span>Ajouter</span>
@@ -305,34 +333,6 @@ function ProjectDashboard() {
 
               </form>
             </div>
-
-            {/* Partage Pas encore faites*/}
-            {/* <div>
-              <h3 className="text-lg font-semibold text-slate-700 mb-3">🤝 Partager le projet</h3>
-              <ul className="mb-3 list-disc ml-6 text-slate-700">
-                {sharedWith.map((email, idx) => (
-                  <li key={idx}>{email}</li>
-                ))}
-              </ul>
-
-              <form onSubmit={handleShare} className="bg-yellow-50 p-4 rounded-lg border border-slate-200 shadow-sm flex flex-col sm:flex-row gap-3">
-                <input
-                  type="email"
-                  placeholder="Email de l'utilisateur"
-                  value={shareEmail}
-                  onChange={(e) => setShareEmail(e.target.value)}
-                  className="flex-1 px-3 py-2 rounded border border-gray-300 focus:ring-green-400 focus:outline-none"
-                  required
-                />
-                <button
-                  type="submit"
-                  className=" bg-green-500 text-white px-3 py-2 rounded font-medium hover:bg-green-700 transition flex items-center"
-                >
-                  <PlusIcon className="h-4 w-4 mr-1" />
-                  Partager
-                </button>
-              </form>
-            </div> */}
 
             {/* Message */}
             {message && (

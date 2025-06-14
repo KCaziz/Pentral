@@ -89,7 +89,7 @@ export function AppSidebar({ user, ...props }) {
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader className={`transition-all duration-200 ${state === 'collapsed' ? 'hidden' : 'inline-block'}`}>
       <a href="/dashboard" className="block transition-all duration-200">
-          <button className={`mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90  ${state === 'collapsed' ? 'justify-center px-2' : ''}`}>
+          <button className={`mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-500 text-primary-foreground rounded-md hover:bg-primary/90  ${state === 'collapsed' ? 'justify-center px-2' : ''}`}>
             <Home className="w-5 h-5" />
             <span className={`transition-all duration-200 ${state === 'collapsed' ? 'hidden' : 'inline-block'}`}>
               Accueil
@@ -98,7 +98,7 @@ export function AppSidebar({ user, ...props }) {
         </a>
 
         <a href="/scan" className="block transition-all duration-200">
-          <button className={`mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90  ${state === 'collapsed' ? 'justify-center px-2' : ''}`}>
+          <button className={`mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-500 text-primary-foreground rounded-md hover:bg-primary/90  ${state === 'collapsed' ? 'justify-center px-2' : ''}`}>
             <Scan className="w-5 h-5" />
             <span className={`transition-all duration-200 ${state === 'collapsed' ? 'hidden' : 'inline-block'}`}>
               Scan Rapide
@@ -127,12 +127,12 @@ export function AppSidebar({ user, ...props }) {
             url: "/report",
             icon: FileText,
           },
-          {
-            name: "Scans",
-            url: "/gestionscans",
-            icon: Shield,
-            isActive: true,
-          },
+          // {
+          //   name: "Scans",
+          //   url: "/gestionscans",
+          //   icon: Shield,
+          //   isActive: true,
+          // },
 
           {
             name: "Historique",

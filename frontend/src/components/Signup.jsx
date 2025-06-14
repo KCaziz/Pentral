@@ -103,7 +103,7 @@ export function SignupForm({ className, ...props }) {
                 />
               </div>
               {error && <p className="text-red-500 text-sm">{error}</p>}
-              <Button type="submit" className="w-full">
+              <Button  variant="secondary"className="w-full">
                 S'inscrire
               </Button>
               <Button variant="outline" className="w-full" disabled>

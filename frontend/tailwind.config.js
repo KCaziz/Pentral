@@ -25,10 +25,23 @@
     				DEFAULT: 'hsl(var(--primary))',
     				foreground: 'hsl(var(--primary-foreground))'
     			},
+				primarysoft: {
+					DEFAULT: 'hsl(var(--primary-soft))',
+					foreground: 'hsl(var(--primary-soft))'
+				},
+				primarywarm: {
+					DEFAULT: 'hsl(var(--primary-warm))',
+					foreground: 'hsl(var(--primary-warm))'	
+				},
     			secondary: {
     				DEFAULT: 'hsl(var(--secondary))',
     				foreground: 'hsl(var(--secondary-foreground))'
     			},
+				thirdary: {
+					DEFAULT: 'hsl(var(--thirdary))',
+					foreground: 'hsl(var(--thirdary-foreground))'
+				},
+
     			muted: {
     				DEFAULT: 'hsl(var(--muted))',
     				foreground: 'hsl(var(--muted-foreground))'

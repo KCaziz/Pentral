@@ -118,7 +118,7 @@ function Gestionscans() {
 
 
   if (!user || !scans) {
-    return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-yellow-900 to-slate-900 flex items-center justify-center">
+    return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-red-900 to-slate-900 flex items-center justify-center">
       <div className="relative">
         <div className="w-20 h-20 border-4 border-yellow-200 border-t-yellow-600 rounded-full animate-spin"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
@@ -142,9 +142,9 @@ function Gestionscans() {
         </header> */}
               <header className="flex h-16 items-center px-6 ">
       <div className="flex items-center gap-3">
-        <SidebarTrigger className="hover:text-amber-500 transition-colors" />
-        <Separator orientation="vertical" className="h-6 bg-amber-200" />
-        <h1 className="text-xl font-extrabold text-amber-400 italic">Scans</h1>
+        <SidebarTrigger  />
+        <Separator orientation="vertical" className="h-6 bg-primary" />
+        <h1 className="text-xl font-extrabold text-primary italic">Scans</h1>
       </div>
     </header>
         <Card className="mx-1  h-full overflow-x-auto max-w-full bg-transparent ">

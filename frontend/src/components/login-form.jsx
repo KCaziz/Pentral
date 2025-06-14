@@ -55,7 +55,7 @@ export function LoginForm({ className, ...props }) {
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardTitle className="text-2xl">Connexion</CardTitle>
           <CardDescription>
             Entrer votre mail et mot de passe pour vous connecter.
           </CardDescription>
@@ -76,7 +76,7 @@ export function LoginForm({ className, ...props }) {
               </div>
               <div className="grid gap-2">
                 <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">Mot de passe</Label>
                   <a
                     href="#"
                     className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
@@ -92,11 +92,11 @@ export function LoginForm({ className, ...props }) {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full">
+              <Button variant="secondary" className="w-full">
                 Se connecter
               </Button>
-              <Button variant="outline" className="w-full">
-                avec Google
+              <Button variant="outline" className="w-full" disabled>
+                avec Google (à venir)
               </Button>
               {error && <p className="text-red-500 text-sm">{error}</p>}
             </div>

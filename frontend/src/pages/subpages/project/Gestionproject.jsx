@@ -126,7 +126,7 @@ function Gestionproject() {
   };
 
   if (!user || !projects) {
-    return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-yellow-900 to-slate-900 flex items-center justify-center">
+    return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-red-900 to-slate-900 flex items-center justify-center">
       <div className="relative">
         <div className="w-20 h-20 border-4 border-yellow-200 border-t-yellow-600 rounded-full animate-spin"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
@@ -139,27 +139,18 @@ function Gestionproject() {
     <SidebarProvider>
       <AppSidebar user={user} />
       <SidebarInset>
-        {/* <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2">
+        <header className="flex h-16 items-center px-4 sm:px-6">
+          <div className="flex items-center gap-3">
             <SidebarTrigger />
-            <Separator orientation="vertical" className="h-4" />
+            <Separator orientation="vertical" className="h-6 bg-primary" />
+            <h1 className="text-lg sm:text-xl font-extrabold text-primary italic">Projets</h1>
           </div>
-          <img src={cloudSvg} alt="cloud" className=" ml-auto mb-10  size-32" />
-          <img src={cloudSvg} alt="cloud" className=" ml-[50%] mt-20 size-32" />
+        </header>
 
-        </header> */}
-              <header className="flex h-16 items-center px-6 ">
-      <div className="flex items-center gap-3">
-        <SidebarTrigger className="hover:text-amber-500 transition-colors" />
-        <Separator orientation="vertical" className="h-6 bg-amber-200" />
-        <h1 className="text-xl font-extrabold text-amber-400 italic">Projets</h1>
-      </div>
-    </header>
-        <div className="relative mx-1 rounded-2xl shadow-xl border border-yellow-900 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
-          <div className="flex justify-between items-center mb-4 px-2">
-            {/* <h2 className="text-xl italic font-extrabold text-amber-400">Projets  </h2> */}
+        <div className="relative mx-1 sm:mx-2 rounded-xl sm:rounded-2xl shadow-md sm:shadow-xl border border-yellow-900 p-3 sm:p-4">
+          <div className="flex justify-between items-center mb-3 sm:mb-4 px-1 sm:px-2">
             <select
-              className="px-3 py-2 rounded-md bg-slate-700 text-amber-200 border border-slate-600 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="px-2 py-1 sm:px-3 sm:py-2 rounded-md bg-slate-700 text-white italic border border-slate-600 text-xs sm:text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500  sm:w-auto"
               value={sortKey}
               onChange={(e) => setSortKey(e.target.value)}
             >
@@ -169,74 +160,76 @@ function Gestionproject() {
               <option value="company">Par entreprise</option>
             </select>
           </div>
-          <Card className="mx-2  h-full overflow-x-auto max-w-full bg-transparent">
-            <div className="space-y-2">
-              <div className="p-2"> 
-                <div className="grid grid-cols-12 gap-4 py-3 
-        bg-gradient-to-r from-amber-400 to-orange-500 
-        rounded-lg text-white font-bold tracking-wide shadow items-center">
 
-                  <div className="col-span-3 pl-6 flex items-center">
-                    {TABLE_HEAD[0]}
-                  </div>
+          <Card className="mx-0 sm:mx-2 h-full overflow-x-auto max-w-full bg-transparent shadow-none border-none">
+            <div className="space-y-0">
 
-                  <div className="col-span-2 flex items-center">
-                    {TABLE_HEAD[1]}
-                  </div>
-
-                  <div className="col-span-2 flex items-center">
-                    {TABLE_HEAD[2]}
-                  </div>
-
-                  <div className="col-span-2 flex justify-center">
-                    {TABLE_HEAD[3]}
-                  </div>
-
-                  <div className="col-span-3 pr-6 flex justify-end">
-                    {TABLE_HEAD[4]}
-                  </div>
+              {/* ✅ En-tête version desktop */}
+              <div className="hidden sm:block p-2">
+                <div className="grid grid-cols-12 gap-2 py-3 bg-gradient-to-r from-rose-500 to-red-800 rounded-lg text-white font-bold tracking-wide shadow-lg items-center text-sm">
+                  <div className="col-span-3 pl-4 sm:pl-6">{TABLE_HEAD[0]}</div>
+                  <div className="col-span-2 text-center">{TABLE_HEAD[1]}</div>
+                  <div className="col-span-2 text-center">{TABLE_HEAD[2]}</div>
+                  <div className="col-span-2 text-center">{TABLE_HEAD[3]}</div>
+                  <div className="col-span-3 pr-4 sm:pr-6 text-right">{TABLE_HEAD[4]}</div>
                 </div>
               </div>
 
-              {/* Liste des projets */}
-              <div className="grid grid-cols-1 gap-2">
+              {/* ✅ En-tête version mobile */}
+              <div className="block sm:hidden p-2">
+                <div className="flex justify-between items-center py-3 px-4 bg-gradient-to-r from-rose-500 to-red-800 rounded-lg text-white font-bold tracking-wide shadow-lg text-xs">
+                  <div className="flex-1">{TABLE_HEAD[0]}</div>
+                  <div className="col-span-2 ml-[50%] text-center">{TABLE_HEAD[3]}</div>
+                  <div className="flex-1 text-right">{TABLE_HEAD[4]}</div>
+                </div>
+              </div>
+
+              {/* Liste des projets - version responsive */}
+              <div className="grid grid-cols-1 gap-1 sm:gap-2">
                 {sortedRows.map(({ id, name, company, date, scans }) => (
                   <div
                     key={id}
-                    className="bg-white border border-amber-100 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 mx-2" 
+                    className="bg-gradient-to-r from-white to-red-50 border border-amber-100 rounded-lg sm:rounded-xl shadow-sm sm:shadow-md hover:shadow-md sm:hover:shadow-lg transition-all duration-300 mx-0 sm:mx-2"
                   >
-                    <div className="grid grid-cols-12 items-center p-5 gap-4">
-                      <div className="col-span-3 flex items-center gap-3 pl-2">
-                        <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
-                          <UserCircleIcon className="h-6 w-6 text-orange-600" />
+                    <div className="grid grid-cols-12 items-center p-3 sm:p-5 gap-2 sm:gap-4">
+                      {/* Nom du projet - toujours visible */}
+                      <div className="col-span-7 sm:col-span-3 flex items-center gap-2 sm:gap-3 pl-1 sm:pl-2">
+                        <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                          <UserCircleIcon className="h-4 w-4 sm:h-6 sm:w-6 text-red-600" />
                         </div>
-                        <div className="text-slate-800 font-semibold">{name}</div>
+                        <div className="text-slate-800 font-medium sm:font-semibold text-sm sm:text-base truncate">
+                          {name}
+                        </div>
                       </div>
 
-                      <div className="col-span-2 flex items-center text-slate-600">
-                        <BuildingOfficeIcon className="h-5 w-5 text-orange-400 mr-2" />
-                        {company}
+                      {/* Entreprise - caché sur mobile */}
+                      <div className="hidden sm:flex sm:col-span-2 items-center text-slate-600 text-sm sm:text-base">
+                        <BuildingOfficeIcon className="h-4 w-4 sm:h-5 sm:w-5 text-red-400 mr-1 sm:mr-2" />
+                        <span className="truncate">{company}</span>
                       </div>
 
-                      <div className="col-span-2 flex items-center text-slate-600">
-                        <CalendarIcon className="h-5 w-5 text-orange-400 mr-2" />
-                        {date}
+                      {/* Date - caché sur mobile */}
+                      <div className="hidden sm:flex sm:col-span-2 items-center text-slate-600 text-sm sm:text-base">
+                        <CalendarIcon className="h-4 w-4 sm:h-5 sm:w-5 text-red-400 mr-1 sm:mr-2" />
+                        <span className="truncate">{date}</span>
                       </div>
 
-                      <div className="col-span-2 flex justify-center">
-                        <div className="bg-orange-100 text-orange-700 text-sm font-semibold px-3 py-1 rounded-full flex items-center shadow-inner">
-                          <EyeIcon className="h-4 w-4 mr-1.5" />
+                      {/* Nombre de scans */}
+                      <div className="col-span-3 sm:col-span-2 flex justify-center">
+                        <div className="bg-red-100 text-red-700 text-xs sm:text-sm font-medium sm:font-semibold px-2 py-0.5 sm:px-3 sm:py-1 rounded-full flex items-center shadow-inner">
+                          <EyeIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-1.5" />
                           {scans}
                         </div>
                       </div>
 
-                      <div className="col-span-3 flex justify-end gap-2 pr-2"> 
+                      {/* Actions */}
+                      <div className="col-span-2 sm:col-span-3 flex justify-end gap-1 sm:gap-2 pr-1 sm:pr-2">
                         <button
                           onClick={() => navigate(`/project-dashboard/${id}`)}
-                          className="p-2 bg-orange-100 rounded-lg hover:bg-orange-200 transition"
+                          className="p-1 sm:p-2 bg-red-100 rounded-md sm:rounded-lg hover:bg-red-200 transition"
                           title="Ouvrir"
                         >
-                          <PencilIcon className="h-5 w-5 text-orange-600" />
+                          <PencilIcon className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
                         </button>
 
                         <button
@@ -245,11 +238,23 @@ function Gestionproject() {
                               deleteProject(id);
                             }
                           }}
-                          className="p-2 bg-red-100 rounded-lg hover:bg-red-200 transition"
+                          className="p-1 sm:p-2 bg-red-100 rounded-md sm:rounded-lg hover:bg-red-200 transition"
                           title="Supprimer"
                         >
-                          <TrashIcon className="h-5 w-5 text-red-600" />
+                          <TrashIcon className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
                         </button>
+                      </div>
+                    </div>
+
+                    {/* Version mobile - infos supplémentaires */}
+                    <div className="sm:hidden px-3 pb-3 pt-1 text-sm text-gray-600">
+                      <div className="flex items-center mb-1">
+                        <BuildingOfficeIcon className="h-4 w-4 text-red-400 mr-2" />
+                        {company}
+                      </div>
+                      <div className="flex items-center">
+                        <CalendarIcon className="h-4 w-4 text-red-400 mr-2" />
+                        {date}
                       </div>
                     </div>
                   </div>
