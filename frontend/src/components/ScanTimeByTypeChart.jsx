@@ -8,7 +8,7 @@ const ScanTimeByTypeChart = ({ scans }) => {
   const compterTempsParType = (scans) => {
     const types = {};
     scans.forEach(scan => {
-      const duration = scan.finished_at && scan.started_at 
+      const duration = scan.finished_at && scan.started_at && scan.status === "completed"
         ? (new Date(scan.started_at)) - (new Date(scan.finished_at))
         : 0;
       const hours = duration / (1000 * 60 * 60);

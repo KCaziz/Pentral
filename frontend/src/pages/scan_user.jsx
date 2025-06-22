@@ -14,6 +14,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import cloudSvg from "@/assets/japanese-style-cloud-svgrepo-com (2).svg"
+import anim from "@/assets/Animation.gif"
 
 function Scan_user() {
   const [target, setTarget] = useState("");
@@ -31,7 +32,8 @@ function Scan_user() {
   const [scan_project, setScan_project] = useState("");
   const [error, setError] = useState(null);
   const [chargement, setChargement] = useState(false);
-  const [response, setResponse] = useState("");
+  const [llm_response, setLlm_response] = useState("");
+  const [scanStatus, setScanStatus] = useState({ status: "idle", message: "" });
 
   const { scanId } = useParams();
   const navigate = useNavigate();
@@ -159,6 +161,7 @@ function Scan_user() {
         },
         body: JSON.stringify({
           command: lastCommand,
+          llm_response: llm_response,
         })
       });
 
@@ -197,12 +200,13 @@ function Scan_user() {
     // setIsvalidating(true);
   };
 
+  const getSocketId = () => socket.id;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    setResponse(""); // Réinitialiser les réponses précédentes
+    setLlm_response(""); // Réinitialiser les réponses précédentes
 
     try {
       // 1. D'abord établir la connexion streaming
@@ -218,7 +222,7 @@ function Scan_user() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ target }),
+          body: JSON.stringify({ target, socket_id: getSocketId()  }),
         });
 
         const data = await response.json();
@@ -243,11 +247,20 @@ function Scan_user() {
 
     socket.on("llm_response", (data) => {
       console.log("Token reçu");
-      setResponse((prev) => prev + data.token);
+      setLlm_response((prev) => prev + data.token);
     });
 
     socket.on("llm_end", (data) => {
       console.log("Fin de stream:", data.final_text);
+    });
+    socket.on("scan_status", (data) => {
+      console.log("Status scan:", data);
+      setScanStatus({
+        status: data.status,
+        message: data.message,
+        timestamp: data.timestamp,
+        data: data.data
+      });
     });
 
     return () => {
@@ -255,6 +268,7 @@ function Scan_user() {
       socket.off("llm_end");
       socket.off("connect");
       socket.off("connect_error");
+      socket.off("scan_status"); 
     };
   }, []);
 
@@ -300,13 +314,13 @@ function Scan_user() {
           <div className="flex flex-col lg:flex-row items-center justify-center gap-6 w-full max-w-7xl">
 
             <div className="bg-card rounded-lg shadow-lg w-full max-w-md h-[300px] overflow-auto font-mono text-green-400 whitespace-pre-wrap border border-border">
-              <div className="flex items-center m-2 border-b border-border">
-                <div className="h-3 w-3 bg-red-500 rounded-full mr-2"></div>
-                <div className="h-3 w-3 bg-yellow-500 rounded-full mr-2"></div>
-                <div className="h-3 w-3 bg-green-500 rounded-full mr-3"></div>
-                <span className=" text-foreground">LLM Response</span>
+              <div className="sticky top-0 bg-card z-10 p-2 flex items-center mx-0 my-2 border-b border-border">
+                <div className="h-3 w-3 bg-red-500 rounded-full "></div>
+                <div className="h-3 w-3 bg-yellow-500 rounded-full "></div>
+                <div className="h-3 w-3 bg-green-500 rounded-full "></div>
+                <span className="ml-3 text-sm text-foreground">LLM Response</span>
               </div>
-              {response || <span className="text-muted-foreground text-sm ml-4">$ Waiting for response...</span>}
+              {llm_response || <span className="text-muted-foreground text-sm ml-4">$ Waiting for response...</span>}
             </div>
 
             <div className="bg-card border border-border p-6 rounded-lg shadow-lg w-full max-w-md text-center">
@@ -328,7 +342,7 @@ function Scan_user() {
                   disabled={loading}
                   className="w-full py-2 rounded bg-primary text-background font-semibold hover:bg-primary/80 transition"
                 >
-                  {loading ? "Analyse en cours..." : "Exécuter"}
+                  {loading ? "Scan en cours..." : output ? "Terminé" : "Exécuter"}
                 </button>
               </form>
               <div>
@@ -343,7 +357,7 @@ function Scan_user() {
                           <p className="text-yellow-700 mb-3">
                             Voulez-vous exécuter cette commande {command[command.length - 1]} ?
                           </p>
-                          <div className="items-center space-y-4 space-x-4">
+                          <div className="flex gap-2 justify-center">
                             <button
                               onClick={() => sendResponse("o")}
                               className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
@@ -365,22 +379,23 @@ function Scan_user() {
                             value={customCommand}
                             onChange={(e) => setCustomCommand(e.target.value)}
                             className="border p-2 rounded"
-                            placeholder="Entrez votre commande alternative" /><div className="flex space-x-2">
-                              <button
-                                onClick={submitCustomCommand}
-                                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                              >
-                                Envoyer
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setShowInput(false);
-                                  setIsPaused(false);
-                                }}
-                                className="bg-muted-foreground text-background px-4 py-2 rounded hover:bg-muted"
-                              >
-                                Annuler
-                              </button>
+                            placeholder="Entrez votre commande alternative" />
+                              <div className="flex gap-2 justify-center">
+                                <button
+                                  onClick={submitCustomCommand}
+                                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                                >
+                                  Envoyer
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setShowInput(false);
+                                    setIsPaused(false);
+                                  }}
+                                  className="bg-muted-foreground text-background px-4 py-2 rounded hover:bg-muted"
+                                >
+                                  Annuler
+                                </button>
                             </div></>
                         </div>
                       )}
@@ -389,13 +404,13 @@ function Scan_user() {
                 ) : null}
               </div>
               <div>
-                {loading && <Loading />}
+                {loading &&  <Loading scanStatus={scanStatus} />}
               </div>
-              {showReport && (
+              {scan.report_url && (
                 <div className="items-center justify-center">
                   {/* <iframe src={`http://127.0.0.1:5000/${scan.report_url}`} className="mt-3" width="100%" height="100%" title="Rapport PDF" /> */}
                   <a
-                    href={`http://127.0.0.1:5000/${scan.report_url}`}
+                    href={`http://127.0.0.1:5000${scan.report_url}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-block bg-rose-400 text-background  font-semibold py-2 px-4 rounded-lg hover:bg-rose-600  transition duration-300 mt-3"
@@ -404,46 +419,65 @@ function Scan_user() {
                   </a>
                 </div>
               )}
-              {output && !loading && (
-                <div className="mt-4 bg-background  p-4 rounded-lg max-h-96 overflow-y-auto">
-                  <div className="flex justify-between items-center mb-2">
-                    <h3 className="text-primary font-mono">Output:</h3>
-                    <button
-                      onClick={() => setOutput("")}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      × Clear
-                    </button>
-                  </div>
-                  <pre className="text-green-400 font-mono text-sm whitespace-pre-wrap break-words">
-                    {typeof output === 'object' ? JSON.stringify(output, null, 2) : output}
-                  </pre>
-                </div>
+              
+              {output && !loading &&(
+                // <div className="mt-4 bg-background  p-4 rounded-lg max-h-96 overflow-y-auto">
+                //   <div className="flex justify-between items-center mb-2">
+                //     <h3 className="text-primary font-mono">Output:</h3>
+                //     <button
+                //       onClick={() => setOutput("")}
+                //       className="text-muted-foreground hover:text-foreground"
+                //     >
+                //       × Clear
+                //     </button>
+                //   </div>
+                //   <pre className="text-green-400 font-mono text-sm whitespace-pre-wrap break-words">
+                //     {typeof output === 'object' ? JSON.stringify(output, null, 2) : output}
+                //   </pre>
+                // </div>
+
+                <a
+                  href={`http://127.0.0.1:5000/${output}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block bg-rose-400 text-background font-semibold py-2 px-4 rounded-lg hover:bg-rose-600 transition duration-300 mt-4"
+                >
+                  Consulter le rapport
+                </a>
               )}
             </div>
 
 
             <div className="bg-card rounded-lg shadow-lg w-full max-w-sm font-mono text-green-400 border border-border h-[300px] overflow-auto">
               <div className="flex items-center p-2 border-b border-border">
-                <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
-                <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
-                <div className="w-3 h-3 bg-green-500 rounded-full mr-4"></div>
+                <div className="w-3 h-3 bg-red-500 rounded-full "></div>
+                <div className="w-3 h-3 bg-yellow-500 rounded-full "></div>
+                <div className="w-3 h-3 bg-green-500 rounded-full "></div>
                 <span className="ml-3 text-sm text-foreground">Terminal</span>
               </div>
 
               <div className="px-4 pt-2">
-                {command_affichage.length > 0 ? (
-                  <>
-                    <p className="text-muted-foreground mb-2">$ Commandes exécutées:</p>
-                    {command_affichage.map((cmd, index) => (
-                      <div key={index} className="mb-1">
-                        <span className="text-green-400">$</span> {cmd}
-                      </div>
-                    ))}
-                  </>
-                ) : (
-                  <p className="text-muted-foreground">Aucune commande exécutée...</p>
-                )}
+ {command_affichage.length > 0 ? (
+  <>
+    <p className="text-muted-foreground mb-2">$ Commandes exécutées:</p>
+    {command_affichage.map((cmd, index) => (
+      <div key={index} className="mb-1">
+        <span className="text-green-400">$</span> {cmd}
+      </div>
+    ))}
+  </>
+) : command.length > 0 ? (
+  <>
+    <p className="text-muted-foreground mb-2">$ Commandes exécutées:</p>
+    {command.map((cmd, index) => (
+      <div key={index} className="mb-1">
+        <span className="text-green-400">$</span> {cmd}
+      </div>
+    ))}
+  </>
+) : (
+  <p className="text-muted-foreground">Aucune commande exécutée...</p>
+)}
 
 
                 <div className="mt-2 flex items-center">
@@ -459,18 +493,31 @@ function Scan_user() {
   );
 }
 
-function Loading() {
+
+function Loading({ scanStatus }) {
   return (
     <div className="flex flex-col items-center justify-center bg-opacity-0 mt-4">
       <img
         // src="http://a.top4top.net/p_1990j031.gif"
-        src="https://i.gifer.com/5Q0v.gif"
+        // src="https://i.gifer.com/5Q0v.gif"
+        src={anim}
         alt="Loading"
-        className="w-32 h-32"
+        className="w-48 h-48"
       />
-      <span className="text-xl font-semibold text-black mt-2">Loading...</span>
+    
+      <div className="text-center space-y-2">
+        {scanStatus.status ? (
+          <p className="text-md font-medium text-forground transition-opacity duration-1000 opacity-100">
+           {scanStatus.status} : {scanStatus.message}
+          </p>
+        )
+        : (
+          <p className="text-sm font-light text-forground animate-pulse">
+            Chargement en cours...
+          </p>
+        )}
+      </div>
     </div>
   );
 }
-
 export default Scan_user;

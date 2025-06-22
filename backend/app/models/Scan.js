@@ -14,6 +14,11 @@ const scanSchema = new Schema({
       command: String,
     }
   ],
+  llm_response: [
+    {
+      response: String,
+    }
+  ],
   report_url: String,
   iterations: { type: Number, default: 3 },
   created_at: { type: Date, default: Date.now }

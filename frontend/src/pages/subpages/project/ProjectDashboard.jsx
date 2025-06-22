@@ -193,37 +193,40 @@ function ProjectDashboard() {
             <div className="">
               <h3 className="text-lg font-semibold text-slate-700 mb-3">📂 Scans liés</h3>
               <div className="text-sm text-gray-600 mb-4">
-  <button
-    onClick={() => setShowHelp(!showHelp)}
-    className="flex items-center gap-2 text-red-600 hover:text-red-800 font-bold transition"
-  >
-    <ChevronDown className="w-4 h-4" />
-    {showHelp ? "Masquer les explications" : "Comprendre les types de scans et les iterations"}
-  </button>
+                <button
+                  onClick={() => setShowHelp(!showHelp)}
+                  className="flex items-center gap-2 text-red-600 hover:text-red-800 font-bold transition"
+                >
+                  <ChevronDown className="w-4 h-4" />
+                  {showHelp ? "Masquer les explications" : "Comprendre les types de scans et les iterations"}
+                </button>
 
-  {showHelp && (
-    <div className="mt-3 bg-white/60 backdrop-blur-md border border-red-200 rounded-xl p-5 shadow-sm space-y-4">
-<div className="grid md:grid-cols-2 gap-4">
-    <div className="bg-red-50 border border-red-100 rounded-lg p-4 space-y-2">
-      <p className="font-medium text-red-600">🔄 Scan sans utilisateur (automatique)</p>
-      <p>Le système enchaîne les commandes sans interruption. Idéal pour des tests rapides, mais risque d'exécuter des actions non souhaitées si les premières commandes manquent de contexte.</p>
-      <p className="text-xs text-gray-500 italic">Ex: 3 itérations peuvent rater une faille profonde, 8 itérations peuvent générer des doublons ou perdre le fil logique.</p>
-    </div>
-    <div className="bg-red-100 border border-red-200 rounded-lg p-4 space-y-2">
-      <p className="font-medium text-red-700">👤 Scan avec utilisateur (semi-automatique)</p>
-      <p>Vous validez chaque commande. Cela permet d’ajuster la stratégie à chaque étape et d’éviter les commandes inutiles ou dangereuses.</p>
-      <p className="text-xs text-gray-500 italic">Ex: Une commande détecte un port ouvert inhabituel → vous pouvez orienter manuellement la suite vers un vecteur plus précis.</p>
-    </div>
-  </div>
-  <div className="bg-white/70 border border-dashed border-red-200 rounded-md p-3">
-    <p className="font-medium text-gray-800">💡 Exemple :</p>
-    <p className="text-gray-600">
-      Pour une cible exposée sur internet, un scan automatique avec <strong>5 itérations</strong> pourrait tester 5 ports classiques. Mais avec validation manuelle, après avoir détecté un port <code>5985</code> ouvert, vous pourriez décider d’explorer <strong>WinRM</strong> ou d’injecter une commande PowerShell personnalisée.
-    </p>
-  </div>
-    </div>
-  )}
-</div>
+                {showHelp && (
+                  <div className="mt-3 bg-white/60 backdrop-blur-md border border-red-200 rounded-xl p-5 shadow-sm space-y-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="bg-red-50 border border-red-100 rounded-lg p-4 space-y-2">
+                        <p className="font-medium text-red-600">🔄 Scan sans utilisateur (automatique)</p>
+                        <p>Le système enchaîne les commandes sans interruption. Idéal pour des tests rapides, mais risque d'exécuter des actions non souhaitées si les premières commandes manquent de contexte.</p>
+                        <p className="text-xs text-gray-500 italic">Ex: 3 itérations peuvent rater une faille, 8 itérations peuvent perdre le fil logique.</p>
+                      </div>
+                      <div className="bg-red-100 border border-red-200 rounded-lg p-4 space-y-2">
+                        <p className="font-medium text-red-700">👤 Scan avec utilisateur (semi-automatique)</p>
+                        <p>Vous validez chaque commande. Cela permet d’ajuster la stratégie à chaque étape et d’éviter les commandes inutiles ou dangereuses.</p>
+                        <p>Mais prends plus de temps.</p>
+                        <p className="text-xs text-gray-500 italic">Ex: Une commande détecte un port ouvert inhabituel → vous pouvez orienter manuellement la suite vers un vecteur plus précis.</p>
+                      </div>
+                    </div>
+                    <div className="bg-white/70 border border-dashed border-red-200 rounded-md p-3">
+                      <p className="font-medium text-gray-800">💡 Exemple :</p>
+                      <p className="text-gray-600">
+                        <strong>Scan automatique :</strong> Après avoir détecté un service <strong>HTTP</strong> et <strong>SSH</strong> lors d’un scan, l’outil peut enchaîner sur une détection de version, une extraction de bannières, une recherche de CVE, puis l’exécution de scripts adaptés comme <code>nikto</code> ou <code>ssh-audit</code>. </p>
+                      <p className="text-gray-600">
+                        <strong>Scan avec utilisateur :</strong> L’utilisateur peut choisir de remplacer la commande de scan <strong>HTTP</strong> par un test ciblé avec <code>curl</code> ou de désactiver l’analyse SSH pour privilégier un service plus critique découvert en parallèle.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
 
 
               <ul className="space-y-4">
@@ -315,7 +318,7 @@ function ProjectDashboard() {
                     onChange={(e) => setIterations(parseInt(e.target.value))}
                     className="px-3 pr-5 py-2 bg-white rounded border border-gray-300 focus:ring-red-400 focus:border-red-400 focus:outline-none"
                   >
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                    {[2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
                       <option key={num} value={num}>{num}</option>
                     ))}
                   </select>

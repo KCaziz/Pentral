@@ -22,6 +22,9 @@ export default function AdminDashboard() {
     const [userSort, setUserSort] = useState("username");
     const [projectSort, setProjectSort] = useState("date");
     const [userCache, setUserCache] = useState({});
+    const [totalTimeSpent, setTotalTimeSpent] = useState(0);
+    const [tempsMoyenMinutes, setTempsMoyenMinutes] = useState(0);
+    const [tempsGagneEstimeMinutes, setTempsGagneEstimeMinutes] = useState(0);
 
     const token = localStorage.getItem("token");
     const userId = localStorage.getItem("user_id");
@@ -135,6 +138,62 @@ export default function AdminDashboard() {
             setMessage("Erreur de chargement.");
         }
     };
+
+    useEffect(() => {
+        if (scans.length > 0) {
+            const stats = estimateTimeSaved(scans);
+            setTempsMoyenMinutes(stats.averageSpeed);
+            setTempsGagneEstimeMinutes(stats.totalSavedMinutes);
+            setTotalTimeSpent(stats.totalTimeSpent);
+        }
+    }, [scans]);
+
+    function estimateTimeSaved(scans) {
+        const finishedScans = scans.filter(
+            scan => scan.started_at && scan.finished_at && scan.status === "completed"
+        );
+
+        if (finishedScans.length === 0) {
+            return {
+                averageSpeed: 0,
+                totalSavedMinutes: 0,
+                scansCount: 0,
+                totalTimeSpent: 0
+            };
+        }
+
+        const averageHumanPentestTime = 120; // minutes
+        let totalTimeSpent = 0;
+
+        for (const scan of finishedScans) {
+            const start = new Date(scan.started_at);
+            const end = new Date(scan.finished_at);
+            console.log(end, start);
+
+
+            const durationSeconds = Math.abs(new Date(scan.finished_at) - new Date(scan.started_at)) / 1000 / 60;
+
+            console.log(durationSeconds);
+
+
+            if (!isNaN(durationSeconds) && durationSeconds > 0) {
+                totalTimeSpent += durationSeconds;
+            }
+        }
+
+        const validScanCount = finishedScans.length;
+        const averageTimeSpent = totalTimeSpent / validScanCount;
+        const totalHumanTime = validScanCount * averageHumanPentestTime;
+        const totalSavedMinutes = totalHumanTime - totalTimeSpent;
+
+        return {
+            averageSpeed: Math.round(averageTimeSpent),
+            totalSavedMinutes: Math.max(0, Math.round(totalSavedMinutes)),
+            scansCount: validScanCount,
+            totalTimeSpent: Math.round(totalTimeSpent)
+        };
+    }
+
 
     function compterScansParMois(scans) {
         const counts = {};
@@ -500,7 +559,7 @@ export default function AdminDashboard() {
                         value={stats.totalScans}
                         color="from-rose-400/20 to-slate-900/20"
                         delay={200}
-                        onClick={() => {setActiveTab('scans'); setScanSort('name'); window.scrollTo(0, 400); }}
+                        onClick={() => { setActiveTab('scans'); setScanSort('name'); window.scrollTo(0, 400); }}
                         tooltip="Nombre total de scans effectués."
                     />
                     {statsadv && (
@@ -517,7 +576,7 @@ export default function AdminDashboard() {
                             <StatCard
                                 icon={Sigma}
                                 title="Durée totale scans"
-                                value={statsadv.TotalScansDuration}
+                                value={statsadv.totalScansDuration}
                                 color="from-rose-800/20 to-slate-900/20"
                                 delay={400}
                                 tooltip="Somme des durées de tous les scans terminés."

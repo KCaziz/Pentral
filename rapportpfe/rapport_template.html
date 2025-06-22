@@ -110,7 +110,7 @@
 <body>
 
 <header>
-    <img src="file:///C:/Users/Dalouu/Desktop/rapportpfe/logo_keystone.png" alt="Logo Keystone" class="logo">
+    <img src="/root/Pentral/frontend/src/assets/Key-W-logo.png" alt="Logo Keystone" class="logo">
     <h1>{{ project_title }}</h1>
     <div class="date">{{ date }}</div>
 </header>
@@ -169,10 +169,22 @@
     </table>
 </section>
 
+{% if cve_recommendations %}
 <section>
-    <h2>Remarques</h2>
-    <p>{{ remarks }}</p>
+    <h2>Recommandations</h2>
+    <div class="cve-section">
+        {% for reco in cve_recommendations %}
+            <pre style="font-family: inherit; white-space: pre-wrap; margin-bottom: 1em;">{{ reco }}</pre>
+        {% endfor %}
+    </div>
 </section>
+
+{% else %}
+<section>
+    <h2>Recommandations</h2>
+    <p>Aucune recommandation spécifique n’a été générée.</p>
+</section>
+{% endif %}
 
 <footer>
     Rapport  –  Keystone Corporation

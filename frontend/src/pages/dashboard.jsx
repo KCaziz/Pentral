@@ -113,49 +113,53 @@ export default function Dashboard() {
 
     }
   }, [scans]);
+  
+function estimateTimeSaved(scans) {
+  const finishedScans = scans.filter(
+    scan => scan.started_at && scan.finished_at && scan.status === "completed"
+  );
 
-  function estimateTimeSaved(scans) {
-    const finishedScans = scans.filter(scan => scan.started_at && scan.finished_at);
-
-    if (finishedScans.length === 0) {
-      return {
-        averageSpeed: 0,
-        totalSavedMinutes: 0,
-        scansCount: 0
-      };
-    }
-
-    const averageHumanPentestTime = 120; // minutes (estimation manuelle)
-
-    let totalTimeSpent = 0;
-
-    for (const scan of finishedScans) {
-      const start = new Date(scan.started_at);
-      const end = new Date(scan.finished_at);
-
-      const diffMinutes = (start - end) / (1000 * 60);
-
-      // Ignorer les valeurs négatives ou absurdes
-      if (!isNaN(diffMinutes) && diffMinutes > 0 && diffMinutes < 600) {
-        totalTimeSpent += diffMinutes;
-      }
-
-    }
-
-    const validScanCount = finishedScans.length;
-    const averageTimeSpent = totalTimeSpent / validScanCount;
-
-    const totalHumanTime = validScanCount * averageHumanPentestTime;
-    const totalSavedMinutes = totalHumanTime - totalTimeSpent;
-
+  if (finishedScans.length === 0) {
     return {
-      averageSpeed: Math.round(averageTimeSpent),
-      totalSavedMinutes: Math.max(0, Math.round(totalSavedMinutes)),
-      scansCount: validScanCount,
-      totalTimeSpent: totalTimeSpent,
-
+      averageSpeed: 0,
+      totalSavedMinutes: 0,
+      scansCount: 0,
+      totalTimeSpent: 0
     };
   }
+
+  const averageHumanPentestTime = 120; // minutes
+  let totalTimeSpent = 0;
+
+  for (const scan of finishedScans) {
+    const start = new Date(scan.started_at);
+    const end = new Date(scan.finished_at);
+    console.log(end, start);
+    
+
+    const durationSeconds = Math.abs(new Date(scan.finished_at) - new Date(scan.started_at)) / 1000 /60;
+
+    console.log(durationSeconds);
+    
+
+    if (!isNaN(durationSeconds) && durationSeconds > 0) {
+      totalTimeSpent += durationSeconds;
+    }
+  }
+
+  const validScanCount = finishedScans.length;
+  const averageTimeSpent = totalTimeSpent / validScanCount;
+  const totalHumanTime = validScanCount * averageHumanPentestTime;
+  const totalSavedMinutes = totalHumanTime - totalTimeSpent;
+
+  return {
+    averageSpeed: Math.round(averageTimeSpent),
+    totalSavedMinutes: Math.max(0, Math.round(totalSavedMinutes)),
+    scansCount: validScanCount,
+    totalTimeSpent: Math.round(totalTimeSpent)
+  };
+}
+
 
 
   // compter les scans par jour
@@ -306,7 +310,7 @@ export default function Dashboard() {
               </div> */}
               <div className="group relative rounded-xl bg-gradient-to-r from-rose-500/70 to-red-500/70 p-6 border border-rose-500/20 shadow-md hover:shadow-lg hover:scale-[1.02] transition-transform duration-200">
                 <p className="flex items-center text-base text-gray-200 font-semibold">
-                  Temps Total passé
+                  Durée totale scans
                   <InformationCircleIcon className="h-4 w-4 ml-1 text-white cursor-help" />
                   <div className="absolute hidden group-hover:block w-64 p-2 left-8 top-14 bg-slate-900/90 border border-rose-400/30 rounded-lg shadow-lg text-xs text-gray-200 z-10 transition-opacity duration-150">
                     Temps total passé sur les scans, y compris les scans sans utilisateur.

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Rapport d'Énumération - Domaine</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; margin: 40px; background-color: #f5f5f5; color: #333; }
+        header { background-color: #000; color: #fff; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 30px; }
+        header img.logo { width: 150px; margin-bottom: 10px; }
+        h1 { font-size: 32px; margin-bottom: 5px; }
+        .date { text-align: right; font-size: 0.9em; margin-top: -40px; color: #ccc; }
+        section { background-color: #fff; margin: 20px 0; padding: 25px; border-left: 6px solid #c80000; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        section h2 { margin-bottom: 15px; color: #c80000; text-transform: uppercase; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; table-layout: fixed; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; vertical-align: middle; word-wrap: break-word; white-space: normal; }
+        tbody tr:nth-child(even) { background-color: #f9f9f9; }
+        td.criticite-haute { color: #c80000; font-weight: bold; }
+        td.criticite-moyenne { color: #FF8C00; font-weight: bold; }
+        td.criticite-faible { color: #228B22; font-weight: bold; }
+        tr { page-break-inside: avoid; }
+        footer { text-align: center; margin-top: 40px; font-size: 0.8em; color: #777; }
+        thead { background-color: #464242; color: white; font-weight: bold; }
+        p.remarks { margin-top: 15px; font-style: italic; color: #444; background-color: #eef; padding: 10px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <img src="/root/Pentral/frontend/src/assets/Key-W-logo.png" alt="Logo Keystone" class="logo">
+    <h1>{{ project_title }}</h1>
+    <div class="date">{{ date }}</div>
+</header>
+
+<div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+    <div style="flex: 0 0 45%;">
+        <p><strong>Nom du projet :</strong> {{ project_name }}</p>
+        <p><strong>ID du scan :</strong> {{ scan_id }}</p>
+    </div>
+    <div style="flex: 0 0 45%;">
+        <p><strong>Domaine cible :</strong> {{ domain_name }}</p>
+        <p><strong>Date :</strong> {{ date }}</p>
+    </div>
+</div>
+
+<section>
+    <h2>Informations sur le domaine</h2>
+    <p><strong>Registrar :</strong> {{ whois.registrar }}</p>
+    <p><strong>Date de création :</strong> {{ whois.creation_date }}</p>
+    <p><strong>Date d’expiration :</strong> {{ whois.expiry_date }}</p>
+    <p><strong>Serveurs DNS :</strong> {{ whois.dns_servers | join(', ') }}</p>
+    <p><strong>Statut :</strong> {{ whois.status }}</p>
+    <p><strong>Email(s) :</strong> {{ whois.emails | join(', ') }}</p>
+</section>
+
+<section>
+    <h2>Enregistrements DNS</h2>
+    {% for rtype, values in dns_records.items() %}
+        <p>
+            <strong>{{ rtype }}:</strong>
+            {% if values %}
+                {{ values | join(', ') }}
+            {% else %}
+                Aucun enregistrement trouvé.
+            {% endif %}
+        </p>
+    {% endfor %}
+</section>
+
+
+<section>
+    <h2>Sous-domaines détectés</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Sous-domaine</th>
+                <th>Adresse(s) IP</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sub in subdomains %}
+            <tr>
+                <td>{{ sub }}</td>
+                <td>
+                    {% set ips = [] %}
+                    {% for group in ip_results %}
+                        {% if sub in group.noms %}
+                            {% set _ = ips.append(group.ip) %}
+                        {% endif %}
+                    {% endfor %}
+                    {% if ipv6_map[sub] is defined %}
+                        {% for ip6 in ipv6_map[sub] %}
+                            {% set _ = ips.append(ip6) %}
+                        {% endfor %}
+                    {% endif %}
+                    {{ ips | join(', ') if ips else "Aucune IP trouvée" }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+</section>
+
+{% for group in ip_results %}
+<section>
+    <h3>Adresse IP : {{ group["ip"] }}</h3>
+    <p><strong>Domaine(s) associé(s) :</strong> {{ group["noms"] | join(", ") }}</p>
+    <p><strong>Services détectés :</strong> {{ group["results"] | length }}</p>
+
+    {% set services = group["results"] %}
+    {% if services %}
+    <table>
+        <thead>
+            <tr>
+                <th>Port</th>
+                <th>Technologie</th>
+                <th>Version</th>
+                <th>Vulnérable</th>
+                <th>CVE</th>
+                <th>Criticité</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for res in services %}
+            <tr>
+                <td>{{ res.port or "—" }}</td>
+                <td>{{ res.technologie or "—" }}</td>
+                <td>{{ res.version or "—" }}</td>
+                <td>{% if res.vulnerable %}✅ True{% else %}❌ False{% endif %}</td>
+                <td>{{ res.cve or "—" }}</td>
+                <td class="{% if res.criticite == 'Haute' %}criticite-haute
+                            {% elif res.criticite == 'Moyenne' %}criticite-moyenne
+                            {% elif res.criticite == 'Basse' %}criticite-faible
+                            {% else %}criticite-inconnue{% endif %}">
+                    {% if res.criticite == 'Haute' %}🔴 Haute
+                    {% elif res.criticite == 'Moyenne' %}🟠 Moyenne
+                    {% elif res.criticite == 'Basse' %}🟢 Basse
+                    {% else %}—
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Aucun service détecté pour cette IP.</p>
+    {% endif %}
+
+    {% if group["cve_recommendations"] %}
+        <section>
+            <h4>Recommandations</h4>
+            <div class="cve-section">
+                {% for reco in group["cve_recommendations"] %}
+<pre style="white-space: pre-wrap; font-family: inherit; font-size: 0.95em; line-height: 1.6; tab-size: 4; margin-bottom: 1.5em; background: #f9f9f9; padding: 10px; border-radius: 6px;">{{ reco | trim }}</pre>
+
+
+                {% endfor %}
+            </div>
+        </section>
+
+
+    {% else %}
+        <section>
+            <h4>Recommandations</h4>
+            <p>Aucune recommandation n’a été générée.</p>
+        </section>
+    {% endif %}
+
+</section>
+{% endfor %} 
+
+<footer>
+    Rapport – Keystone Corporation
+</footer>
+
+</body> 
+</html>

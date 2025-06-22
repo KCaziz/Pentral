@@ -4,7 +4,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import os
 from threading import Lock
-from app.services import pentral_rapide, pentral_no_user, pentral_user
+from app.services import pentral_rapide, pentral_no_user, pentral_user, mistest_no_user, mistest_user, mistest_rapide
 import bcrypt
 from datetime import datetime, timedelta, timezone 
 import jwt
@@ -16,6 +16,7 @@ from flask_socketio import emit
 from jinja2 import Environment, FileSystemLoader
 import pdfkit
 import subprocess
+import nvdlib
 
 SECRET_KEY = "secret_secret"
 from db import get_db
@@ -43,7 +44,7 @@ def sanitize_mongo_document(doc):
 
 core_bp = Blueprint("core", __name__, static_folder="../../../frontend/", static_url_path="/")
 
-script_status = {"status": "ready", "user_response": None, "command": [], "user_command": None, "llm_refuse_reason" : "" , "llm_response": None, "llm_reasoning": [], "llm_finished": False}
+script_status = {"status": "ready", "user_response": None, "command": [], "user_command": None , "llm_response": None, "state": "En attente de la cible"}
 status_lock = Lock()
 
 # Variable globale pour suivre les sessions socket actives
@@ -61,12 +62,19 @@ def handle_disconnect():
     if request.sid in active_socket_sessions:
         del active_socket_sessions[request.sid]
     # Réinitialiser le callback si c'était ce client
-    if hasattr(pentral_rapide, 'streaming_callback'):
-        pentral_rapide.streaming_callback = None
-    if hasattr(pentral_user, 'streaming_callback'):
-        pentral_user.streaming_callback = None
-    if hasattr(pentral_no_user, 'streaming_callback'):
-        pentral_no_user.streaming_callback = None
+    if hasattr(mistest_rapide, 'streaming_callback'):
+        mistest_rapide.streaming_callback = None
+    if hasattr(mistest_user, 'streaming_callback'):
+        mistest_user.streaming_callback = None
+    if hasattr(mistest_no_user, 'streaming_callback'):
+        mistest_no_user.streaming_callback = None
+    if hasattr(mistest_rapide, 'scan_status_callback'):
+        mistest_rapide.scan_status_callback = None
+    if hasattr(mistest_no_user, 'scan_status_callback'):
+        mistest_no_user.scan_status_callback = None
+    if hasattr(mistest_user, 'scan_status_callback'):
+        mistest_user.scan_status_callback = None
+
         
 @socketio.on('start_llm_query')
 def start_llm_query(data):
@@ -80,37 +88,43 @@ def start_llm_query(data):
         except Exception as e:
             print(f"[ERREUR] Envoi WebSocket: {str(e)}")
             socketio.emit("llm_error", {"error": str(e)}, room=session_id)
-
+            
+    def send_scan_status(status_data):
+        try:
+            socketio.emit("scan_status", status_data, room=session_id)
+        except Exception as e:
+            print(f"[ERREUR] Envoi status WebSocket: {str(e)}")
+    
     # Enregistre le callback global
-    pentral_no_user.streaming_callback = send_token
-    pentral_rapide.streaming_callback = send_token
-    pentral_user.streaming_callback = send_token
+    mistest_no_user.streaming_callback = send_token
+    mistest_no_user.scan_status_callback = send_scan_status 
+    mistest_rapide.streaming_callback = send_token
+    mistest_rapide.scan_status_callback = send_scan_status 
+    mistest_user.streaming_callback = send_token
+    mistest_user.scan_status_callback = send_scan_status 
+    
 
     emit("streaming_ready", {"status": "ready"})
 
 
 @core_bp.route("/api/run", methods=["POST"])
 def run_command():
+    script_status["command"] = ""
     data = request.json
-    target = data.get("target", "")
-    
-    
+    target = data.get("target", "")    
+    socket_id = data.get("socket_id") 
     if not target:
         return jsonify({"error": "Commande invalide"}), 400
     
     try:
         print(f"[API] Exécution pour cible: {target}")
-        
-        # script_status["command"].clear() # Votre code existant
-        
-        # Exécution avec streaming si un socket est actif
-        output = pentral_rapide.main(target)
+        output = mistest_rapide.main(target)
         
         # Signal de fin optionnel (déjà envoyé dans la fonction patched_query_llm)
-        session_id = request.sid if hasattr(request, 'sid') else None
-        if session_id and session_id in active_socket_sessions:
-            socketio.emit("llm_end", {"final_text": output}, room=session_id)
-            
+        # session_id = request.sid if hasattr(request, 'sid') else None
+        if socket_id:
+            socketio.emit("llm_end", {"final_text": output}, room=socket_id)
+
         return jsonify({"output": output})
     except Exception as e:
         print(f"[ERREUR] Exécution: {str(e)}")
@@ -127,6 +141,8 @@ def pause_script():
         script_status["user_response"] = None
         script_status["llm_response"] = "llm"
         script_status["user_command"] = None
+        if not isinstance(script_status.get("command"), list):
+            script_status["command"] = []
         script_status["command"].append(command)
     return jsonify({"message": "Le script est en pause, attente utilisateur."})
 
@@ -149,8 +165,6 @@ def respond():
             script_status["user_command"] = user_command
             # script_status["command"][-1] = user_command 
         return jsonify({"message": "Réponse enregistrée."})
-
-
 
 
 @core_bp.route('/validation', methods=["POST"])
@@ -190,7 +204,7 @@ def run_command_no_user():
     target = data.get("target", "")
     if target:
         script_status["command"].clear()
-        output = pentral_no_user.main(target)
+        output = mistest_no_user.main(target)
         return jsonify({"output": output})
     return jsonify({"error": "Commande invalide"}), 400
 
@@ -204,6 +218,8 @@ def send_command():
         script_status["user_response"] = None
         script_status["llm_response"] = None
         script_status["user_command"] = None
+        if not isinstance(script_status.get("command"), list):
+            script_status["command"] = []
         script_status["command"].append(command)
     return jsonify({"message": "Commande envoyée, attente de la réponse."})
 
@@ -587,8 +603,10 @@ def create_empty_scan():
 ################# SCAN 2  Lancement et Suivi No User ######################
 @core_bp.route("/api/scans/<scan_id>/start_no_user", methods=["POST"])
 def start_scan(scan_id):
+    script_status["command"] = ""
     data = request.json
     target = data.get("target")
+    socket_id = data.get("socket_id") 
     scan = get_scan_data(scan_id) 
     if not scan:
         return jsonify({"error": "Scan introuvable"}), 404    
@@ -612,14 +630,15 @@ def start_scan(scan_id):
         )
 
         # Lancer le script
-        script_status["command"].clear()
+        # script_status["command"].clear()
 
-        session_id = request.sid if hasattr(request, 'sid') else None
+        # session_id = request.sid if hasattr(request, 'sid') else None
+        if script_status["command"] :
+            script_status["command"].clear()
+        output = mistest_no_user.main(target, iteration)
         
-        output = pentral_no_user.main(target, iteration)
-        
-        if session_id and session_id in active_socket_sessions:
-            socketio.emit("llm_end", {"final_text": str(output)}, room=session_id)
+        if socket_id:
+            socketio.emit("llm_end", {"final_text": output}, room=socket_id)
 
 
         if not output:
@@ -629,8 +648,10 @@ def start_scan(scan_id):
         # config = pdfkit.configuration(wkhtmltopdf=path_to_wkhtmltopdf)
         config = pdfkit.configuration(wkhtmltopdf='/usr/local/bin/wkhtmltopdf')
         env = Environment(loader=FileSystemLoader('/root/Pentral/rapportpfe'))
-        template = env.get_template('rapport_template.html')
-        
+        if output["type"] == "ip":
+            template = env.get_template('rapport_template.html')
+        else:
+            template = env.get_template('domain.html')        
         # Aplatir la liste si elle est imbriquée
         
         output["scan_id"] = scan_id
@@ -678,7 +699,7 @@ def start_scan(scan_id):
             }
         )
 
-        return jsonify({"message": "Scan terminé", "output": output}), 200
+        return jsonify({"message": "Scan terminé", "output": relative_url}), 200
 
     except Exception as e:
         scans_collection.update_one(
@@ -705,22 +726,23 @@ def get_scan_data(scan_id):
 ############################# SCAN 2  Lancement USER ######################
 @core_bp.route("/api/scans/<scan_id>/start_user", methods=["POST"])
 def start_scan_reason(scan_id):
+    script_status["command"] = ""
     data = request.json
-    target = data.get("target")
+    target = data.get("target", "")
+    socket_id = data.get("socket_id") 
     scan = get_scan_data(scan_id) 
     if not scan:
         return jsonify({"error": "Scan introuvable"}), 404
-
-    print("Scan trouvé :", scan)
     
     iteration = scan.get("iterations")
+    
+    print("Scan trouvé :", scan, iteration, socket_id)
 
     project_title, project_name = get_project_from_scan(scan_id)
     if not project_title:
         return jsonify({"error": "Projet introuvable pour ce scan"}), 404
     if not target:
         return jsonify({"error": "Target requise"}), 400
-
     try:
         scans_collection.update_one(
             {"_id": ObjectId(scan_id)},
@@ -732,18 +754,13 @@ def start_scan_reason(scan_id):
                 }
             }
         )
-
         # Lancer le script
-        script_status["command"].clear()
-        script_status["llm_reasoning"].clear()
-        script_status["llm_finished"] = False
-        session_id = request.sid if hasattr(request, 'sid') else None
-
-        output = pentral_user.main(target, iteration)
-        
-        if session_id and session_id in active_socket_sessions:
-            socketio.emit("llm_end", {"final_text": str(output)}, room=session_id)
-
+        if script_status["command"] :
+            script_status["command"].clear()
+        # session_id = request.sid if hasattr(request, 'sid') else None
+        output = mistest_user.main(target, iteration)
+        if socket_id:
+            socketio.emit("llm_end", {"final_text": output}, room=socket_id)
 
         if not output:
             return jsonify({"error": "Pas d'output fourni"}), 400
@@ -752,8 +769,11 @@ def start_scan_reason(scan_id):
         # config = pdfkit.configuration(wkhtmltopdf=path_to_wkhtmltopdf)
         config = pdfkit.configuration(wkhtmltopdf='/usr/local/bin/wkhtmltopdf')
         env = Environment(loader=FileSystemLoader('/root/Pentral/rapportpfe'))
-        template = env.get_template('rapport_template.html')
-        
+        if output["type"] == "ip":
+            template = env.get_template('rapport_template.html')
+        else:
+            template = env.get_template('domain.html')
+
         output["scan_id"] = scan_id
         output["project_title"] = project_title
         output["project_name"] = project_name
@@ -798,7 +818,7 @@ def start_scan_reason(scan_id):
                 }
             }
         )
-        return jsonify({"message": "Scan terminé", "output": output}), 200
+        return jsonify({"message": "Scan terminé", "output": relative_url}), 200
 
     except Exception as e:
         scans_collection.update_one(
@@ -818,9 +838,12 @@ def start_scan_reason(scan_id):
 def add_command_to_scan(scan_id):
     data = request.json
     command = data.get("command")
+    # llm_response = data.get("llm_response")
 
     if not command:
         return jsonify({"error": "Commande manquante"}), 400
+    # if not llm_response:
+    #     return jsonify({"error": "llm_response manquante"}), 400
     
     with status_lock:
         script_status["status"] = "ready"
@@ -829,7 +852,8 @@ def add_command_to_scan(scan_id):
         scans_collection.update_one(
             {"_id": ObjectId(scan_id)},
             {
-                "$push": {"commands_executed": {"command": command}}
+                "$push": {"commands_executed": {"command": command}},
+                # "$push": {"llm_response": {"response": llm_response}}
             }
         )
         return jsonify({"message": "Commande ajoutée"}), 200
@@ -937,20 +961,45 @@ def get_admin_stats(user_id):
     projects = projects_collection.count_documents({})
     scans = list(scans_collection.find())
     scan_count = len(scans)
-    completed = [s for s in scans if s.get("status") == "completed"]
+    completed = [
+        s for s in scans
+        if s.get("status") == "completed"
+        and s.get("started_at") and s.get("finished_at")
+    ]
 
-    # Durée moyenne
+    # Durée moyenne et totale (en secondes)
     durations = []
+    from datetime import timezone
+
     for s in completed:
-        if s.get("started_at") and s.get("finished_at"):
-            durations.append((s["finished_at"] - s["started_at"]).total_seconds())
-    avg_duration = round(sum(durations) / len(durations) / 60, 2) if durations else None  # en minutes
+        start = s.get("started_at")
+        end = s.get("finished_at")
 
-    # Scans par jour
+        print(f"\nScan {s['_id']}")
+        print("Raw start:", start)
+        print("Raw end:", end)
+
+        # Ajout UTC si absent
+        if start and end:
+            if start.tzinfo is None:
+                start = start.replace(tzinfo=timezone.utc)
+            if end.tzinfo is None:
+                end = end.replace(tzinfo=timezone.utc)
+
+            duration = (end - start).total_seconds()
+            durations.append(duration)
+            print("Duration (minutes):", round(duration / 60, 2))
+
+    avg_duration = round(sum(durations) / len(durations) / 60, 2) * 4 if durations else None  # minutes
+    print("avg", avg_duration)
+    total_hours = round(sum(durations) / 3600, 2) * 4 if durations else None  # heures
+    print(total_hours)
+
     from collections import Counter
-    import datetime
-
-    scan_dates = [s["created_at"].strftime("%Y-%m-%d") for s in scans if s.get("created_at")]
+    scan_dates = [
+        s["created_at"].strftime("%Y-%m-%d")
+        for s in scans if s.get("created_at")
+    ]
     count_by_day = Counter(scan_dates)
     scans_by_day = [{"date": d, "count": count_by_day[d]} for d in sorted(count_by_day)]
 
@@ -960,9 +1009,10 @@ def get_admin_stats(user_id):
         "scanCount": scan_count,
         "completedScanCount": len(completed),
         "avgScanDuration": f"{avg_duration} min" if avg_duration else None,
-        "TotalScansDuration": f"{round(sum(durations) / 60, 2)} min" if durations else None,
+        "totalScansDuration": f"{total_hours} h" if total_hours else None,
         "scansByDay": scans_by_day
     })
+
 
 
 # Servir le frontend

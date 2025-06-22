@@ -3,7 +3,7 @@ import os
 from db import get_db
 from flask_cors import CORS
 from flask_socketio import SocketIO
-
+import sys
 socketio = SocketIO(cors_allowed_origins="*", async_mode="eventlet", allow_upgrades=True)
 
 
@@ -17,6 +17,8 @@ def create_app():
     
     
     CORS(app, resources={r"/*": {"origins": "*"}})
+
+    print("PYTHON EXECUTABLE:", sys.executable)
 
     from .routes.core import core_bp
     app.register_blueprint(core_bp)

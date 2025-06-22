@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator"
 import { Activity } from "lucide-react";
 
 import { io } from "socket.io-client";
-const socket = io("http://127.0.0.1:5000"); // ou l’URL de ton backend Flask
+const socket = io("http://127.0.0.1:5000"); 
 
 import {
   SidebarInset,
@@ -15,6 +15,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import cloudSvg from "@/assets/japanese-style-cloud-svgrepo-com (2).svg"
+import anim from "@/assets/Animation.gif"
 
 function Scan() {
   const [target, setTarget] = useState("");
@@ -31,13 +32,12 @@ function Scan() {
   const [initialCommand, setInitialCommand] = useState("");
   const [response, setResponse] = useState("");
   const [user, setUser] = useState(null);
-  const [scan, setScan] = useState(null);
-  const [report, setReport] = useState(null);
-  const [showReport, setShowReport] = useState(false);
   const [scan_project, setScan_project] = useState("");
   const [error, setError] = useState(null);
   const [chargement, setChargement] = useState(false);
   const { scanId } = useParams();
+  const [scanStatus, setScanStatus] = useState({ status: "idle", message: "" });
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -67,9 +67,7 @@ function Scan() {
       setError("Aucun ID utilisateur trouvé");
     }
 
-
   }, []);
-
 
   useEffect(() => {
     if (user_response) {
@@ -127,7 +125,7 @@ function Scan() {
     setInitialCommand(command.at(-1));
     setCommand(prevCommands => {
       if (prevCommands.length === 0) return [command];
-      return [...prevCommands.slice(0, -1), customCommand + " (en validation)"];
+      return [...prevCommands.slice(0, -1), customCommand];
     }
     );
     setIsPaused(false);
@@ -163,7 +161,7 @@ function Scan() {
     setLlm_response('');
     setUser_command('');
   };
-
+const getSocketId = () => socket.id;
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -183,7 +181,7 @@ function Scan() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ target }),
+          body: JSON.stringify({ target, socket_id: getSocketId()   }),
         });
 
         const data = await response.json();
@@ -215,12 +213,22 @@ function Scan() {
     socket.on("llm_end", (data) => {
       console.log("Fin de stream:", data.final_text);
     });
+    socket.on("scan_status", (data) => {
+      console.log("Status scan:", data);
+      setScanStatus({
+        status: data.status,
+        message: data.message,
+        timestamp: data.timestamp,
+        data: data.data
+      });
+    });
 
     return () => {
       socket.off("llm_response");
       socket.off("llm_end");
       socket.off("connect");
       socket.off("connect_error");
+      socket.off("scan_status"); 
     };
   }, []);
 
@@ -258,14 +266,14 @@ function Scan() {
           <div className="flex flex-col lg:flex-row items-center justify-center gap-6 w-full max-w-7xl">
 
             <div className="bg-card rounded-lg shadow-lg w-full max-w-md h-[300px] overflow-auto font-mono text-green-400 whitespace-pre-wrap border border-border">
-              <div className="flex items-center m-2 border-b border-border">
+              <div className="sticky top-0 bg-card z-10 p-2 flex items-center m-2 border-b border-border">
                 <div className="w-3 h-3 rounded-full bg-red-500" />
                 <div className="w-3 h-3 rounded-full bg-yellow-500" />
                 <div className="w-3 h-3 rounded-full bg-green-500" />
                 <span className="ml-3 text-sm text-foreground">LLM Response</span>
               </div>
-              <div className="p-4 whitespace-pre-wrap">
-                {response || <span className="text-muted-foreground text-sm">$ Waiting for response...</span>}
+              <div className="px-4 pt-2 whitespace-pre-wrap">
+                {response || <span className="text-muted-foreground text-sm ml-4">$ Waiting for response...</span>}
               </div>
             </div>
 
@@ -286,7 +294,7 @@ function Scan() {
                   disabled={loading}
                   className="w-full py-2 rounded bg-primary text-background font-semibold hover:bg-primary/80 transition"
                 >
-                  {loading ? "Analyse en cours..." : "Exécuter"}
+                  {loading ? "Scan en cours..." : output ? "Terminé" : "Exécuter"}
                 </button>
               </form>
 
@@ -298,7 +306,7 @@ function Scan() {
                       <p className="text-muted-foreground">
                         Voulez-vous exécuter cette commande <strong>{command.at(-1)}</strong> ?
                       </p>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 justify-center">
                         <button
                           onClick={() => sendResponse("o")}
                           className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
@@ -322,7 +330,7 @@ function Scan() {
                         className="w-full p-2 rounded border border-border bg-background text-foreground"
                         placeholder="Entrez votre commande alternative"
                       />
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 justify-center">
                         <button
                           onClick={submitCustomCommand}
                           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
@@ -337,7 +345,7 @@ function Scan() {
                             setUser_response('');
                             setIsPaused(true);
                           }}
-                          className="bg-muted-foreground text-background px-4 py-2 rounded hover:bg-muted"
+                          className="bg-muted-foreground text-background px-4 py-2 rounded hover:bg-gray-600"
                         >
                           Annuler
                         </button>
@@ -347,31 +355,30 @@ function Scan() {
                 </div>
               )}
 
-              {loading && <Loading />}
+              {loading && <Loading scanStatus={scanStatus} />}
               {output && !loading && (
-                <div className="bg-background border border-border mt-4 p-4 rounded-lg max-h-72 overflow-y-auto font-mono text-sm text-green-400">
-                  <div className="flex justify-between items-center mb-2">
-                    <h3 className="text-primary font-semibold">Output:</h3>
-                    <button
-                      onClick={() => setOutput("")}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      × Clear
-                    </button>
-                  </div>
-                  <pre>{typeof output === 'object' ? JSON.stringify(output, null, 2) : output}</pre>
+                <div className="items-center justify-center">
+                  {/* <iframe src={`http://127.0.0.1:5000/${scan.report_url}`} className="mt-3" width="100%" height="100%" title="Rapport PDF" /> */}
+                  <a
+                    href={`http://127.0.0.1:5000${output}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block bg-rose-400 text-background  font-semibold py-2 px-4 rounded-lg hover:bg-rose-600  transition duration-300 mt-3"
+                  >
+                    Consulter le rapport
+                  </a>
                 </div>
               )}
             </div>
 
             <div className="bg-card rounded-lg shadow-lg w-full max-w-sm font-mono text-green-400 border border-border h-[300px] overflow-auto">
-              <div className="flex items-center p-2 border-b border-border">
+              <div className="sticky top-0 bg-card z-10 flex items-center p-2 border-b border-border">
                 <div className="w-3 h-3 bg-red-500 rounded-full" />
                 <div className="w-3 h-3 bg-yellow-500 rounded-full" />
                 <div className="w-3 h-3 bg-green-500 rounded-full" />
                 <span className="ml-3 text-sm text-foreground">Terminal</span>
               </div>
-              <div className="px-4 pt-2">
+              <div className="px-4 pt-2"> 
                 {command.length > 0 ? (
                   <>
                     <p className="text-muted-foreground mb-2">$ Commandes exécutées:</p>
@@ -391,6 +398,7 @@ function Scan() {
                 </div>
               </div>
             </div>
+            
           </div>
         </div>
       </SidebarInset>
@@ -398,16 +406,29 @@ function Scan() {
   );
 }
 
-function Loading() {
+function Loading({ scanStatus }) {
   return (
     <div className="flex flex-col items-center justify-center bg-opacity-0 mt-4">
       <img
         // src="http://a.top4top.net/p_1990j031.gif"
-        src="https://i.gifer.com/5Q0v.gif"
+        // src="https://i.gifer.com/5Q0v.gif"
+        src={anim}
         alt="Loading"
-        className="w-32 h-32"
+        className="w-48 h-48"
       />
-      <span className="text-xl font-semibold text-black mt-2">Loading...</span>
+    
+      <div className="text-center space-y-2">
+        {scanStatus.status ? (
+          <p className="text-md font-medium text-forground transition-opacity duration-1000 opacity-100">
+           {scanStatus.status} : {scanStatus.message}
+          </p>
+        )
+        : (
+          <p className="text-sm font-light text-forground animate-pulse">
+            Chargement en cours...
+          </p>
+        )}
+      </div>
     </div>
   );
 }

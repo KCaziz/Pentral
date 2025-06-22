@@ -1,3 +1,0 @@
-# Nmap 7.95 scan initiated Sat Jun  7 21:49:23 2025 as: /usr/lib/nmap/nmap -sV -p 80,443,135,445,139 -A -f -oN 192.168.31.129
-WARNING: No targets were specified, so 0 hosts scanned.
-# Nmap done at Sat Jun  7 21:49:24 2025 -- 0 IP addresses (0 hosts up) scanned in 0.73 seconds

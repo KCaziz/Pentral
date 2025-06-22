@@ -14,7 +14,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import cloudSvg from "@/assets/japanese-style-cloud-svgrepo-com (2).svg"
-
+import anim from "@/assets/Animation.gif"
 function Scan_no_user() {
   const [target, setTarget] = useState("");
   const [command, setCommand] = useState([]);
@@ -27,7 +27,9 @@ function Scan_no_user() {
   const [scan, setScan] = useState(null);
   const [report, setReport] = useState(null);
   const [showReport, setShowReport] = useState(false);
-  const [response, setResponse] = useState("");
+  const [llm_response, setLlm_response] = useState("");
+  
+  const [scanStatus, setScanStatus] = useState({ status: "idle", message: "" });
 
   const { scanId } = useParams();
   const navigate = useNavigate();
@@ -108,6 +110,8 @@ function Scan_no_user() {
           const res = await fetch("http://127.0.0.1:5000/get_response");
           const data = await res.json();
           if (data.status === "waiting") {
+            console.log("azaz",data);
+            
             setCommand(data.command);
             sendResponse(data.command);
           }
@@ -131,7 +135,9 @@ function Scan_no_user() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          command: cmd[cmd.length - 1]
+          command: cmd[cmd.length - 1],
+          // llm_response: llm_response,
+
         })
       });
 
@@ -147,11 +153,11 @@ function Scan_no_user() {
       throw error; // Propager l'erreur pour la gérer plus haut
     }
   }
-
+  const getSocketId = () => socket.id;
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setResponse("");
+    setLlm_response("");
 
     try {
       console.log("Initialisation du streaming...");
@@ -165,7 +171,7 @@ function Scan_no_user() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ target }),
+          body: JSON.stringify({ target, socket_id: getSocketId()  }),
         });
 
         const data = await response.json();
@@ -190,11 +196,20 @@ function Scan_no_user() {
 
     socket.on("llm_response", (data) => {
       console.log("Token reçu");
-      setResponse((prev) => prev + data.token);
+      setLlm_response((prev) => prev + data.token);
     });
 
     socket.on("llm_end", (data) => {
       console.log("Fin de stream:", data.final_text);
+    });
+    socket.on("scan_status", (data) => {
+      console.log("Status scan:", data);
+      setScanStatus({
+        status: data.status,
+        message: data.message,
+        timestamp: data.timestamp,
+        data: data.data
+      });
     });
 
     return () => {
@@ -202,6 +217,7 @@ function Scan_no_user() {
       socket.off("llm_end");
       socket.off("connect");
       socket.off("connect_error");
+      socket.off("scan_status"); 
     };
   }, []);
 
@@ -249,17 +265,13 @@ function Scan_no_user() {
 
             {/* Bloc LLM Response */}
             <div className="bg-card rounded-lg shadow-lg w-full max-w-md h-[300px] overflow-auto font-mono text-green-400 whitespace-pre-wrap border border-border">
-              <div className="flex items-center m-2 border-b border-border">
-                <div className="h-3 w-3 bg-red-500 rounded-full mr-2" />
-                <div className="h-3 w-3 bg-yellow-500 rounded-full mr-2" />
-                <div className="h-3 w-3 bg-green-500 rounded-full mr-3" />
-                <span className="text-foreground">LLM Response</span>
+              <div className="sticky top-0 bg-card z-10 p-2 flex items-center mx-0 my-2 border-b border-border">
+                <div className="h-3 w-3 bg-red-500 rounded-full "></div>
+                <div className="h-3 w-3 bg-yellow-500 rounded-full "></div>
+                <div className="h-3 w-3 bg-green-500 rounded-full "></div>
+                <span className="ml-3 text-sm text-foreground">LLM Response</span>
               </div>
-              {response || (
-                <span className="text-muted-foreground text-sm ml-4">
-                  $ Waiting for response...
-                </span>
-              )}
+              {llm_response || <span className="text-muted-foreground text-sm ml-4">$ Waiting for response...</span>}
             </div>
 
             {/* Bloc Formulaire */}
@@ -285,11 +297,10 @@ function Scan_no_user() {
                 </button>
               </form>
 
-              {loading && <div className="mt-4"><Loading /></div>}
-
+              {loading && <Loading scanStatus={scanStatus} />}
               {showReport && (
                 <a
-                  href={`http://127.0.0.1:5000/${scan.report_url}`}
+                  href={`http://127.0.0.1:5000${scan.report_url}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-block bg-rose-400 text-background font-semibold py-2 px-4 rounded-lg hover:bg-rose-600 transition duration-300 mt-4"
@@ -299,32 +310,40 @@ function Scan_no_user() {
               )}
 
               {output && !loading && (
-                <div className="mt-4 bg-background border border-border p-4 rounded-lg max-h-48 overflow-y-auto text-left">
-                  <div className="flex justify-between items-center mb-2">
-                    <h3 className="text-primary font-semibold">Output:</h3>
-                    <button
-                      onClick={() => setOutput("")}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      × Clear
-                    </button>
-                  </div>
-                  <pre className="text-green-400 font-mono text-sm whitespace-pre-wrap break-words overflow-y-auto">
-                    {typeof output === "object"
-                      ? JSON.stringify(output, null, 2)
-                      : output}
-                  </pre>
-                </div>
+                // <div className="mt-4 bg-background border border-border p-4 rounded-lg max-h-48 overflow-y-auto text-left">
+                //   <div className="flex justify-between items-center mb-2">
+                //     <h3 className="text-primary font-semibold">Output:</h3>
+                //     <button
+                //       onClick={() => setOutput("")}
+                //       className="text-muted-foreground hover:text-foreground"
+                //     >
+                //       × Clear
+                //     </button>
+                //   </div>
+                //   <pre className="text-green-400 font-mono text-sm whitespace-pre-wrap break-words overflow-y-auto">
+                //     {typeof output === "object"
+                //       ? JSON.stringify(output, null, 2)
+                //       : output}
+                //   </pre>
+                // </div>
+                <a
+                  href={`http://127.0.0.1:5000${output}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block bg-rose-400 text-background font-semibold py-2 px-4 rounded-lg hover:bg-rose-600 transition duration-300 mt-4"
+                >
+                  Consulter le rapport
+                </a>
               )}
             </div>
 
             {/* Bloc Terminal */}
             <div className="bg-card rounded-lg shadow-lg w-full max-w-sm font-mono text-green-400 border border-border h-[300px] overflow-auto">
-              <div className="flex items-center p-2 border-b border-border">
-                <div className="w-3 h-3 bg-red-500 rounded-full mr-2" />
-                <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2" />
-                <div className="w-3 h-3 bg-green-500 rounded-full mr-4" />
-                <span className="text-sm text-foreground">Terminal</span>
+              <div className="sticky top-0 bg-card z-10 flex items-center p-2 border-b border-border">
+                <div className="w-3 h-3 bg-red-500 rounded-full " />
+                <div className="w-3 h-3 bg-yellow-500 rounded-full " />
+                <div className="w-3 h-3 bg-green-500 rounded-full " />
+                <span className="ml-3 text-sm text-foreground">Terminal</span>
               </div>
               <div className="px-4 pt-2">
                 {command.length > 0 ? (
@@ -354,16 +373,30 @@ function Scan_no_user() {
   );
 }
 
-function Loading() {
+
+function Loading({ scanStatus }) {
   return (
     <div className="flex flex-col items-center justify-center bg-opacity-0 mt-4">
       <img
         // src="http://a.top4top.net/p_1990j031.gif"
-        src="https://i.gifer.com/5Q0v.gif"
+        // src="https://i.gifer.com/5Q0v.gif"
+        src={anim}
         alt="Loading"
-        className="w-32 h-32"
+        className="w-48 h-48"
       />
-      <span className="text-xl font-semibold text-black mt-2">Loading...</span>
+    
+      <div className="text-center space-y-2">
+        {scanStatus.status ? (
+          <p className="text-md font-medium text-forground transition-opacity duration-1000 opacity-100">
+           {scanStatus.status} : {scanStatus.message}
+          </p>
+        )
+        : (
+          <p className="text-sm font-light text-forground animate-pulse">
+            Chargement en cours...
+          </p>
+        )}
+      </div>
     </div>
   );
 }

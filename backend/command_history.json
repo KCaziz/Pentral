@@ -1,0 +1,25 @@
+{
+  "commands": [
+    {
+      "tool": "nmap",
+      "command": "nmap --script=ppp-discovery 192.168.31.129 -p 3000",
+      "timestamp": 1750534113.1530976
+    },
+    {
+      "tool": "nmap",
+      "command": "nmap --script http-headers -p 1337 192.168.31.129",
+      "timestamp": 1750546272.3122995
+    },
+    {
+      "tool": "nmap",
+      "command": "nmap --script http-headers -p 1337 192.168.31.129",
+      "timestamp": 1750547005.9654984
+    },
+    {
+      "tool": "nmap",
+      "command": "nmap -sV --script ppp-discovery 192.168.31.129",
+      "timestamp": 1750548742.1764014
+    }
+  ],
+  "errors": {}
+}

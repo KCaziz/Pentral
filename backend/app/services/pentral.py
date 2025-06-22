@@ -342,7 +342,7 @@ def query_llm(prompt, api_url="http://host.docker.internal:8080/v1/chat/completi
             
         # Payload compatible avec l'API de llama.cpp
         payload = {
-            "model": "llama", 
+            "model": "Mistral", 
             "messages": [
                 {"role": "system", "content": "Imaginez que trois experts différents répondent à cette question. Tous les experts écriront 1 étape de leur réflexion, puis la partageront avec le groupe. Ensuite, tous les experts passeront à l'étape suivante, etc. Si un expert se rend compte qu'il a tort à un moment donné, alors il part."},
                 {"role": "user", "content": prompt}
