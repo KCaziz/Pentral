@@ -1411,7 +1411,7 @@ def phase1_initiale(target):
 
     history = []
 
-    command =  f"nmap -sS -Pn -T4 --max-retries 1 --host-timeout 90s --min-rate 100 -p1-1000 {target}"
+    command =  f"nmap -sS -Pn -T4 --max-retries 1 --host-timeout 90s --min-rate 100 -p1-8080 {target}"
     #timeout -- T5  -O     max-retries sous domaines 
     install_cmd= "apt install nmap -y"
     
